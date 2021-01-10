@@ -3,7 +3,6 @@ package eskulap;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 
 public class Crosser {
 
@@ -62,13 +61,8 @@ public class Crosser {
         }
     }
 
-    public void reenumerate() {
-        roads.sort(new Comparator<Road>() {
-            @Override
-            public int compare(Road o1, Road o2) {
-                return o1.id - o2.id;
-            }
-        });
+    public void sort() {
+        roads.sort((Road o1, Road o2) -> o1.id - o2.id);
     }
     
 }

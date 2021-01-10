@@ -2,9 +2,9 @@ package eskulap;
 
 public class Road {
     int id;
-    int idHospitalFirst;
-    int idHospitalSecond;
-    int distance;
+    public int idHospitalFirst;
+    public int idHospitalSecond;
+    public int distance;
     
     public Road(int id, int idHospitalFirst, int idHospitalSecond, int distance) {
         this.id =id;

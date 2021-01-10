@@ -3,11 +3,11 @@ package eskulap;
 import java.awt.Point;
 
 public class Hospital {
-    int id;
+    public int id;
     String name;
     Point wsp;
-    int bedNumber;
-    int freeBedCount;
+    public int bedNumber;
+    public int freeBedCount;
 
     public Hospital(int id, String name, int wspx, int wspy, int bedNumber, int freeBedCount) {
         this.id = id;
