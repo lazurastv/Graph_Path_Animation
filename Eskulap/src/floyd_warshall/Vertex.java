@@ -16,7 +16,8 @@ public class Vertex {
     }
     
     public Vertex(Hospital h) {
-        id = h.id;
+        org_id = h.id;
+        id = id_counter++;
         visited = h.bedNumber != 0;
     }
 
