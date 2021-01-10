@@ -7,10 +7,11 @@ import java.awt.EventQueue;
 import java.io.IOException;
 
 public class Eskulap {
-    private static Hospital findIndex(int i, Hospital[] h) {
-        for (Hospital h1 : h) {
-            if (h1.id == i) {
-                return h1;
+    
+    private static Vertex findIndex(int i, Vertex[] ver) {
+        for (Vertex v : ver) {
+            if (v.getOrgId() == i) {
+                return v;
             }
         }
         return null;
@@ -33,10 +34,11 @@ public class Eskulap {
         }
         for (int i = 0; i < roads.length; i++) {
             edges[i] = new Edge(roads[i]);
-            edges[i].setStart(new Vertex(findIndex(roads[i].idHospitalFirst, hospitals)));
-            edges[i].setEnd(new Vertex(findIndex(roads[i].idHospitalSecond, hospitals)));
+            edges[i].setStart(findIndex(roads[i].idHospitalFirst, vertices));
+            edges[i].setEnd(findIndex(roads[i].idHospitalSecond, vertices));
         }
-        FloydWarshallAlgorithm fwa = new FloydWarshallAlgorithm(vertices, edges); //cokolwiek tu trzeba dalej
+        FloydWarshallAlgorithm fwa = new FloydWarshallAlgorithm(vertices, edges);
+        System.out.println(fwa.getClosestVertex(4));
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {

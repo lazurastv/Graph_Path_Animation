@@ -1,6 +1,5 @@
 package floyd_warshall;
 
-import eskulap.Hospital;
 import eskulap.Road;
 
 public class Edge {
