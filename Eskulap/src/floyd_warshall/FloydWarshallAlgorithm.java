@@ -10,12 +10,30 @@ public class FloydWarshallAlgorithm {
     private Edge[] edges;
     private double[][] distMatrix;
     private int[][] nextVertexMatrix;
+    private boolean [] visited;
+    private boolean [] org_visited;
+    
 
     public FloydWarshallAlgorithm(Vertex[] vertices, Edge[] edges) {
         this.vertices = vertices;
         this.edges = edges;
         distMatrix = new double[vertices.length][vertices.length];
         nextVertexMatrix = new int[vertices.length][vertices.length];
+        fillVisited();
+    }
+    
+    public void fillVisited() {
+    	org_visited = new boolean [vertices.length];
+    	
+    	for (int i = 0; i< vertices.length; i++) {
+    		org_visited[i] = vertices[i].getVisited();
+    	}
+    	
+    	visited = org_visited.clone();
+    }
+    
+    public void resetVisited() {
+    	visited = org_visited.clone();
     }
 
     public void applyAlgorithm() {
@@ -78,35 +96,19 @@ public class FloydWarshallAlgorithm {
 
         for (int i = end + 1; i < vertices.length; i++) {
             double temp = distMatrix[start][i];
-            if (temp != 0.0 && temp < endDist) {
+            if (temp < endDist && visited[i] == false && temp != 0.0) {
                 endDist = temp;
                 end = i;
             }
         }
-
+        
+        if (endDist == MAX) {
+        	return -1;
+        }
+        
+        visited[end] = true;
+        
         return end;
     }
-// to pogladowo
 
-    public String toString() {
-        String s = "";
-        for (int i = 0; i < vertices.length; i++) {
-            for (int j = 0; j < vertices.length; j++) {
-                s = s + distMatrix[i][j] + " ";
-            }
-            s = s + "\n";
-        }
-
-        s = s + "\n";
-
-        for (int i = 0; i < vertices.length; i++) {
-            for (int j = 0; j < vertices.length; j++) {
-                s = s + nextVertexMatrix[i][j] + " ";
-            }
-            s = s + "\n";
-        }
-
-        return s;
-    }
-// 
 }
