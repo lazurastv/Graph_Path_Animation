@@ -94,7 +94,7 @@ public class FloydWarshallAlgorithm {
 			}
 		}
 
-		if (endDist == MAX) {
+		if (endDist == MAX || visited[end] == true) {
 			return -1;
 		}
 
