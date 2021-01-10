@@ -1,0 +1,4 @@
+# Obiekty (id | nazwa | wsp. x | wsp. y)
+1 | Pomnik Wikipedii | -1 | 50
+2 | Pomnik Fryderyka Chopina | 110 | 55
+3 | Pomnik Anonimowego Przechodnia | 40 | 70
