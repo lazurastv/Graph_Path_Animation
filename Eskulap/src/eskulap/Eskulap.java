@@ -7,7 +7,7 @@ import java.awt.EventQueue;
 import java.io.IOException;
 
 public class Eskulap {
-    
+
     private static Vertex findIndex(int i, Vertex[] ver) {
         for (Vertex v : ver) {
             if (v.getOrgId() == i) {
@@ -16,10 +16,10 @@ public class Eskulap {
         }
         return null;
     }
-    
+
     public static void main(String[] args) throws IOException {
         FileManager fileManager = new FileManager();
-        Patient[] patients = fileManager.readPatients("pacjenci.txt");  
+        Patient[] patients = fileManager.readPatients("pacjenci.txt");
         Hospital[] hospitals = fileManager.readHospitals("szpitale.txt");
         Construction[] constructions = fileManager.readConstructions("obiekty.txt");
         Road[] roads = fileManager.readRoads("drogi.txt");
@@ -37,8 +37,19 @@ public class Eskulap {
             edges[i].setStart(findIndex(roads[i].idHospitalFirst, vertices));
             edges[i].setEnd(findIndex(roads[i].idHospitalSecond, vertices));
         }
+        System.out.println("Edges:");
+        for (Edge e : edges) {
+            System.out.println((e.getStartVertexId() + 1) + " -> " + (e.getEndVertexId() + 1) + " " + e.getDistance());
+        }
         FloydWarshallAlgorithm fwa = new FloydWarshallAlgorithm(vertices, edges);
-        System.out.println(fwa.getClosestVertex(4));
+        fwa.applyAlgorithm();
+        Vertex v = vertices[0];
+        System.out.println("Path:");
+        while (v.getOrgId() != 5) {
+            int a = fwa.getClosestVertex(v.getId());
+            System.out.println(v.getOrgId() + " -> " + (a + 1));
+            v = vertices[a];
+        }
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {

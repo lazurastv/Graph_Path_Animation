@@ -42,11 +42,11 @@ public class Crosser {
             }
         }
     }
-    
+
     public Hospital[] getHospitals() {
         return hospitals.toArray(new Hospital[0]);
     }
-    
+
     public Road[] getRoads() {
         return roads.toArray(new Road[0]);
     }
@@ -62,7 +62,13 @@ public class Crosser {
     }
 
     public void sort() {
-        roads.sort((Road o1, Road o2) -> o1.id - o2.id);
+        roads.sort((Road o1, Road o2) -> {
+            if (o1.idHospitalFirst - o2.idHospitalFirst == 0) {
+                return o1.idHospitalSecond - o2.idHospitalSecond;
+            } else {
+                return o1.idHospitalFirst - o2.idHospitalFirst;
+            }
+        });
     }
-    
+
 }
