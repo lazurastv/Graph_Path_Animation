@@ -1,13 +1,13 @@
 package floyd_warshall;
 
-import eskulap.Hospital;
+import storage.Hospital;
 
 public class Vertex {
 
     private static int id_counter = 0;
-    private int id;
-    private int org_id;
-    private boolean visited;
+    private final int id;
+    private final int org_id;
+    private final boolean visited;
 
     public Vertex(int org_id) {
         this.org_id = org_id;
@@ -16,9 +16,9 @@ public class Vertex {
     }
     
     public Vertex(Hospital h) {
-        org_id = h.id;
+        org_id = h.getId();
         id = id_counter++;
-        visited = h.bedNumber == 0;
+        visited = h.getBedNumber() == 0;
     }
 
     public int getId() {

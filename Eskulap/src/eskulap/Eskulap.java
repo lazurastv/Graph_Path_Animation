@@ -1,5 +1,10 @@
 package eskulap;
 
+import gui.Board;
+import storage.Hospital;
+import storage.Patient;
+import storage.Road;
+import storage.Construction;
 import floyd_warshall.Edge;
 import floyd_warshall.FloydWarshallAlgorithm;
 import floyd_warshall.Vertex;
@@ -33,9 +38,7 @@ public class Eskulap {
             vertices[i] = new Vertex(hospitals[i]);
         }
         for (int i = 0; i < roads.length; i++) {
-            edges[i] = new Edge(roads[i]);
-            edges[i].setStart(findIndex(roads[i].idHospitalFirst, vertices));
-            edges[i].setEnd(findIndex(roads[i].idHospitalSecond, vertices));
+            edges[i] = new Edge(findIndex(roads[i].getIdFirst(), vertices), findIndex(roads[i].getIdSecond(), vertices), roads[i].getDistance());
         }
         System.out.println("Edges:");
         for (Edge e : edges) {

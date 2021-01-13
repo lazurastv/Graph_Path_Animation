@@ -1,5 +1,8 @@
 package eskulap;
 
+import storage.Hospital;
+import storage.Road;
+import storage.Line;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,18 +26,18 @@ public class Crosser {
                 if (first.contains(cross) && second.contains(cross)) {
                     int id = hospitals.size() + 1;
                     hospitals.add(new Hospital(id, "Skrzyżowanie " + id, cross.x, cross.y, 0, 0));
-                    double ratio = one.distance / first.length();
-                    int len = (int) (ratio * first.distance(true, cross));
-                    roads.add(new Road(roads.get(i).id, one.idHospitalFirst, id, len));
-                    lines.add(new Line(first.s, cross));
-                    roads.add(new Road(lines.size(), one.idHospitalSecond, id, one.distance - len));
-                    lines.add(new Line(cross, first.e));
-                    ratio = two.distance / second.length();
-                    len = (int) (ratio * second.distance(true, cross));
-                    roads.add(new Road(roads.get(j).id, two.idHospitalFirst, id, len));
-                    lines.add(new Line(second.s, cross));
-                    roads.add(new Road(lines.size(), two.idHospitalSecond, id, two.distance - len));
-                    lines.add(new Line(cross, second.s));
+                    double ratio = one.getDistance() / first.length();
+                    double len = ratio * first.distance(true, cross);
+                    roads.add(new Road(roads.get(i).getId(), one.getIdFirst(), id, len));
+                    lines.add(new Line(first.getStart(), cross));
+                    roads.add(new Road(lines.size(), one.getIdSecond(), id, one.getDistance() - len));
+                    lines.add(new Line(cross, first.getEnd()));
+                    ratio = two.getDistance() / second.length();
+                    len = ratio * second.distance(true, cross);
+                    roads.add(new Road(roads.get(j).getId(), two.getIdFirst(), id, len));
+                    lines.add(new Line(second.getStart(), cross));
+                    roads.add(new Road(lines.size(), two.getIdSecond(), id, two.getDistance() - len));
+                    lines.add(new Line(cross, second.getStart()));
                     removeInOrder(roads, i, j);
                     removeInOrder(lines, i, j);
                     j = lines.size();
@@ -63,10 +66,10 @@ public class Crosser {
 
     public void sort() {
         roads.sort((Road o1, Road o2) -> {
-            if (o1.idHospitalFirst - o2.idHospitalFirst == 0) {
-                return o1.idHospitalSecond - o2.idHospitalSecond;
+            if (o1.getIdFirst() - o2.getIdFirst() == 0) {
+                return o1.getIdSecond() - o2.getIdSecond();
             } else {
-                return o1.idHospitalFirst - o2.idHospitalFirst;
+                return o1.getIdFirst() - o2.getIdFirst();
             }
         });
     }

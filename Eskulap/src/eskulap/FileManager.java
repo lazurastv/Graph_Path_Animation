@@ -1,5 +1,9 @@
 package eskulap;
 
+import storage.Hospital;
+import storage.Patient;
+import storage.Road;
+import storage.Construction;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,7 +15,7 @@ public class FileManager {
         ArrayList<Patient> tmp = new ArrayList<>();
         FileReader fr = new FileReader(fname);
         BufferedReader br = new BufferedReader(fr);
-        String line = null;
+        String line;
 
         while ((line = br.readLine()) != null) {
             if (line.toCharArray()[0] == '#') {
@@ -34,7 +38,7 @@ public class FileManager {
         ArrayList<Hospital> tmp = new ArrayList<>();
         FileReader fr = new FileReader(fname);
         BufferedReader br = new BufferedReader(fr);
-        String line = null;
+        String line;
 
         while ((line = br.readLine()) != null) {
             if (line.toCharArray()[0] == '#') {
@@ -58,7 +62,7 @@ public class FileManager {
         ArrayList<Construction> tmp = new ArrayList<>();
         FileReader fr = new FileReader(fname);
         BufferedReader br = new BufferedReader(fr);
-        String line = null;
+        String line;
 
         while ((line = br.readLine()) != null) {
             if (line.toCharArray()[0] == '#') {
@@ -81,7 +85,7 @@ public class FileManager {
         ArrayList<Road> tmp = new ArrayList<>();
         FileReader fr = new FileReader(fname);
         BufferedReader br = new BufferedReader(fr);
-        String line = null;
+        String line;
 
         while ((line = br.readLine()) != null) {
             if (line.toCharArray()[0] == '#') {
