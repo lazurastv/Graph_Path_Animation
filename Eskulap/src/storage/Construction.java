@@ -22,4 +22,8 @@ public class Construction {
     public int getId() {
         return id;
     }
+    
+    public Point getWsp() {
+        return wsp;
+    }
 }

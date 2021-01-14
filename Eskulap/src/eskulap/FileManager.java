@@ -4,11 +4,11 @@ import storage.Hospital;
 import storage.Patient;
 import storage.Road;
 import storage.Construction;
+import storage.Map;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import storage.Map;
 
 public class FileManager {
 

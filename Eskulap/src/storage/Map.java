@@ -29,4 +29,19 @@ public class Map {
         return roads;
     }
     
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Hospital h : hospitals) {
+            sb.append(h).append('\n');
+        }
+        for (Construction c : constructs) {
+            sb.append(c).append('\n');
+        }
+        for (Road r : roads) {
+            sb.append(r).append('\n');
+        }
+        return sb.toString();
+    }
+    
 }

@@ -1,31 +1,37 @@
 package gui;
 
+import eskulap.FileManager;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import storage.Hospital;
 import storage.Road;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import storage.Map;
 
 public class Board extends JFrame {
 
     private Hospital[] hospitals;
     private Road[] roads;
-    private Graph graph;
+    private final Graph graph;
     private final JPanel box;
     private final WestPane west_pane;
     private final SouthPane south_pane;
     private static final int width = 1200;
     private static final int height = 600;
 
-    public Board(Hospital[] hospitals, Road[] roads) {
+    public Board() {
         super("Eskulap");
         box = new JPanel();
-        graph = new Graph(hospitals, roads);
+        graph = new Graph();
         west_pane = new WestPane(new HospitalsChange(), new PatientsChange());
         south_pane = new SouthPane(new SliderChange());
         this.hospitals = hospitals;
@@ -63,6 +69,13 @@ public class Board extends JFrame {
             int returnVal = fc.showOpenDialog(new JPanel());
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 String path = fc.getSelectedFile().getAbsolutePath();
+                try {
+                    Map map = new FileManager().readHospitals(path);
+                    graph.loadMap(map);
+                    System.out.println(map);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
+                }
             }
         }
 

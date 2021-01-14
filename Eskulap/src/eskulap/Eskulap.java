@@ -55,7 +55,7 @@ public class Eskulap {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Board(crosser.getHospitals(), crosser.getRoads());
+                new Board();
                 //new Board(hospitals, roads);
             }
         });
