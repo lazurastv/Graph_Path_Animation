@@ -1,10 +1,10 @@
 package gui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-public class SpeedSlider extends JSlider implements ActionListener {
+public class SpeedSlider extends JSlider implements ChangeListener {
     
     private int speed;
     
@@ -14,15 +14,24 @@ public class SpeedSlider extends JSlider implements ActionListener {
     }
     
     private void init() {
+        setToolTipText("Zmień prędkość animacji.");
         setMinimum(0);
         setMaximum(10);
         setValue(5);
+        setMajorTickSpacing(1);
+        setPaintTicks(true);
+        setSnapToTicks(true);
+        setPaintLabels(true);
+        addChangeListener(this);
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void stateChanged(ChangeEvent e) {
         speed = getValue();
-        System.out.println(speed);
+    }
+    
+    public int getSpeed() {
+        return speed;
     }
     
 }

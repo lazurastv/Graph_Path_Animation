@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import storage.Map;
 
 public class FileManager {
 
@@ -34,15 +35,21 @@ public class FileManager {
         return tmp.toArray(new Patient[0]);
     }
 
-    public Hospital[] readHospitals(String fname) throws IOException {
+    public Map readHospitals(String fname) throws IOException {
+        Map map = new Map();
         ArrayList<Hospital> tmp = new ArrayList<>();
         FileReader fr = new FileReader(fname);
         BufferedReader br = new BufferedReader(fr);
         String line;
+        boolean next = false;
 
         while ((line = br.readLine()) != null) {
             if (line.toCharArray()[0] == '#') {
-                continue;
+                if (next) {
+                    break;
+                } else {
+                    next = true;
+                }
             }
             String[] w = line.split("\\s+[|]");
             if (w.length == 6) {
@@ -55,18 +62,20 @@ public class FileManager {
             }
         }
 
-        return tmp.toArray(new Hospital[0]);
+        map.setHospitals(tmp.toArray(new Hospital[0]));
+        map.setConstructs(readConstructions(br));
+        map.setRoads(readRoads(br));
+
+        return map;
     }
 
-    public Construction[] readConstructions(String fname) throws IOException {
+    private Construction[] readConstructions(BufferedReader br) throws IOException {
         ArrayList<Construction> tmp = new ArrayList<>();
-        FileReader fr = new FileReader(fname);
-        BufferedReader br = new BufferedReader(fr);
         String line;
 
         while ((line = br.readLine()) != null) {
             if (line.toCharArray()[0] == '#') {
-                continue;
+                break;
             }
             String[] w = line.split("\\s+[|]");
             if (w.length == 4) {
@@ -78,19 +87,15 @@ public class FileManager {
                 }
             }
         }
-        
+
         return tmp.toArray(new Construction[0]);
     }
-    public Road[] readRoads(String fname) throws IOException {
+
+    private Road[] readRoads(BufferedReader br) throws IOException {
         ArrayList<Road> tmp = new ArrayList<>();
-        FileReader fr = new FileReader(fname);
-        BufferedReader br = new BufferedReader(fr);
         String line;
 
         while ((line = br.readLine()) != null) {
-            if (line.toCharArray()[0] == '#') {
-                continue;
-            }
             String[] w = line.split("\\s+[|]");
             if (w.length == 4) {
                 try {
@@ -101,7 +106,7 @@ public class FileManager {
                 }
             }
         }
-        
+
         return tmp.toArray(new Road[0]);
     }
 }

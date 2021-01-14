@@ -10,6 +10,7 @@ import floyd_warshall.FloydWarshallAlgorithm;
 import floyd_warshall.Vertex;
 import java.awt.EventQueue;
 import java.io.IOException;
+import storage.Map;
 
 public class Eskulap {
 
@@ -25,13 +26,11 @@ public class Eskulap {
     public static void main(String[] args) throws IOException {
         FileManager fileManager = new FileManager();
         Patient[] patients = fileManager.readPatients("pacjenci.txt");
-        Hospital[] hospitals = fileManager.readHospitals("szpitale.txt");
-        Construction[] constructions = fileManager.readConstructions("obiekty.txt");
-        Road[] roads = fileManager.readRoads("drogi.txt");
-        Crosser crosser = new Crosser(hospitals, roads);
+        Map map = fileManager.readHospitals("szpitale.txt");
+        Crosser crosser = new Crosser(map.getHospitals(), map.getRoads());
         crosser.sort();
-        hospitals = crosser.getHospitals();
-        roads = crosser.getRoads();
+        Hospital[] hospitals = crosser.getHospitals();
+        Road[] roads = crosser.getRoads();
         Vertex[] vertices = new Vertex[hospitals.length];
         Edge[] edges = new Edge[roads.length];
         for (int i = 0; i < hospitals.length; i++) {
