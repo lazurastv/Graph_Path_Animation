@@ -7,7 +7,7 @@ public class Vertex {
     private static int id_counter = 0;
     private final int id;
     private final int org_id;
-    private final boolean visited;
+    private boolean visited;
 
     public Vertex(int org_id) {
         this.org_id = org_id;
@@ -27,6 +27,10 @@ public class Vertex {
 
     public int getOrgId() {
         return org_id;
+    }
+    
+    public void setVisited() {
+        visited = true;
     }
     
     public boolean getVisited() {
