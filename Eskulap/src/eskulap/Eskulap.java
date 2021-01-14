@@ -4,7 +4,6 @@ import gui.Board;
 import storage.Hospital;
 import storage.Patient;
 import storage.Road;
-import storage.Construction;
 import floyd_warshall.Edge;
 import floyd_warshall.FloydWarshallAlgorithm;
 import floyd_warshall.Vertex;

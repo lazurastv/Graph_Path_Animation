@@ -6,8 +6,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Ellipse2D;
@@ -25,15 +23,19 @@ public class Graph extends JPanel {
     private Line2D[] roads;
     private double scaleX;
     private double scaleY;
-    private static final int SIZE_X = 1000;
-    private static final int SIZE_Y = 500;
+    private int x_offset;
+    private int y_offset;
+    private static final int X_SIZE = 1000;
+    private static final int Y_SIZE = 500;
+    private static final int RADIUS = 10;
+    private static final int SPACE = 10;
 
     public Graph() {
         init();
     }
 
     private void init() {
-        setPreferredSize(new Dimension(SIZE_X, SIZE_Y));
+        setPreferredSize(new Dimension(X_SIZE, Y_SIZE));
         setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
         setLayout(new GridLayout(1, 1));
     }
@@ -42,50 +44,85 @@ public class Graph extends JPanel {
         Hospital[] hos = map.getHospitals();
         Construction[] con = map.getConstructs();
         Road[] ros = map.getRoads();
+        findScale(hos, con);
         hospitals = new Rectangle2D[hos.length];
         for (int i = 0; i < hospitals.length; i++) {
+            int x = scale_x(hos[i].getWsp().x);
+            int y = scale_y(hos[i].getWsp().y);
             if (hos[i].getBedNumber() != 0) {
-                hospitals[i] = new Rectangle2D.Double(hos[i].getWsp().x - 5, hos[i].getWsp().y - 5, 10, 10);
+                hospitals[i] = new Rectangle2D.Double(x - RADIUS, y - RADIUS, 2 * RADIUS, 2 * RADIUS);
             } else {
-                hospitals[i] = new Rectangle2D.Double(hos[i].getWsp().x - 2, hos[i].getWsp().y - 5, 4, 10);
+                hospitals[i] = new Rectangle2D.Double(x - 2, y - 5, 4, 10);
             }
         }
         constructs = new Ellipse2D[con.length];
         for (int i = 0; i < constructs.length; i++) {
-            constructs[i] = new Ellipse2D.Double(con[i].getWsp().x - 4, con[i].getWsp().y - 4, 8, 8);
+            int x = scale_x(con[i].getWsp().x);
+            int y = scale_y(con[i].getWsp().y);
+            constructs[i] = new Ellipse2D.Double(x - RADIUS, y - RADIUS, RADIUS * 2, RADIUS * 2);
         }
         roads = new Line2D[ros.length];
         for (int i = 0; i < ros.length; i++) {
-            roads[i] = new Line2D.Double(hos[ros[i].getIdFirst() - 1].getWsp().x, hos[ros[i].getIdFirst() - 1].getWsp().y,
-                    hos[ros[i].getIdSecond() - 1].getWsp().x, hos[ros[i].getIdSecond() - 1].getWsp().y);
+            int x_0 = scale_x(hos[ros[i].getIdFirst() - 1].getWsp().x);
+            int x_1 = scale_x(hos[ros[i].getIdSecond() - 1].getWsp().x);
+            int y_0 = scale_y(hos[ros[i].getIdFirst() - 1].getWsp().y);
+            int y_1 = scale_y(hos[ros[i].getIdSecond() - 1].getWsp().y);
+            roads[i] = new Line2D.Double(x_0, y_0, x_1, y_1);
         }
-        scaleX = (SIZE_X - 10) / findMax(hos)[0];
-        scaleY = (SIZE_Y - 10) / findMax(hos)[1];
         repaint();
     }
+    
+    private int scale_x(int x) {
+        return (int)(scaleX * (x - x_offset)) + SPACE + RADIUS;
+    }
+    
+    private int scale_y(int y) {
+        return (int)(scaleY * (y - y_offset)) + SPACE + RADIUS;
+    }
 
-    private int[] findMax(Hospital[] hospitals) {
-        int maxX = hospitals[0].getWsp().x;
-        int maxY = hospitals[0].getWsp().y;
-        for (Hospital h : hospitals) {
-            if (maxX < h.getWsp().x) {
-                maxX = h.getWsp().x;
+    private void findScale(Hospital[] hos, Construction[] con) {
+        int maxX = hos[0].getWsp().x;
+        int maxY = hos[0].getWsp().y;
+        int minX = maxX;
+        int minY = maxY;
+        for (Hospital h : hos) {
+            int x = h.getWsp().x;
+            int y = h.getWsp().y;
+            if (maxX < x) {
+                maxX = x;
+            } else if (minX > x) {
+                minX = x;
             }
-            if (maxY < h.getWsp().y) {
-                maxY = h.getWsp().y;
+            if (maxY < y) {
+                maxY = y;
+            } else if (minY > y) {
+                minY = y;
             }
         }
-        int[] max = new int[2];
-        max[0] = maxX;
-        max[1] = maxY;
-        return max;
+        for (Construction c : con) {
+            int x = c.getWsp().x;
+            int y = c.getWsp().y;
+            if (maxX < x) {
+                maxX = x;
+            } else if (minX > x) {
+                minX = x;
+            }
+            if (maxY < y) {
+                maxY = y;
+            } else if (minY > y) {
+                minY = y;
+            }
+        }
+        scaleX = (X_SIZE - 2 * SPACE) / (maxX - minX);
+        scaleY = (Y_SIZE - 2 * SPACE) / (maxY - minY);
+        x_offset = minX;
+        y_offset = minY;
     }
 
     @Override
     protected void paintComponent(Graphics gr) {
         super.paintComponent(gr);
         Graphics2D g = (Graphics2D) gr;
-
         Font font = new Font("Serif", Font.PLAIN, 15);
         g.setFont(font);
         Integer hos_index = 1;
@@ -93,33 +130,29 @@ public class Graph extends JPanel {
 
         if (hospitals != null) {
             for (Rectangle2D r : hospitals) {
-                drawScaledObject(g, r, scaleX, scaleY);
+                g.setColor(Color.RED);
+                g.fill(r);
                 g.setColor(Color.BLACK);
-                g.drawString(hos_index.toString(), (float) (r.getCenterX() * scaleX), (float) (r.getCenterY() * scaleY));
+                g.drawString(hos_index.toString(), (float) r.getCenterX() - 2, (float) r.getCenterY() + 5);
                 hos_index++;
             }
             for (Ellipse2D e : constructs) {
-                drawScaledObject(g, e, scaleX, scaleY);
+                g.setColor(Color.RED);
+                g.fill(e);
                 g.setColor(Color.BLACK);
-                g.drawString(con_index.toString(), (float) (e.getCenterX() * scaleX), (float) (e.getCenterY() * scaleY));
+                g.drawString(con_index.toString(), (float) e.getCenterX() - 2, (float) e.getCenterY() + 5);
                 con_index++;
             }
             for (Line2D l : roads) {
-                drawScaledObject(g, l, scaleX, scaleY);
+                g.setColor(Color.RED);
+                g.draw(l);
             }
         } else {
             g.setColor(Color.WHITE);
-            g.fillRect(0, 0, SIZE_X, SIZE_Y);
+            g.fillRect(0, 0, X_SIZE, Y_SIZE);
             g.setColor(Color.BLACK);
-            g.drawString("Wczytaj mapę.", SIZE_X / 2, SIZE_Y / 2);
+            g.drawString("Wczytaj mapę.", X_SIZE / 2, Y_SIZE / 2);
         }
-    }
-
-    private static void drawScaledObject(Graphics2D g, Shape shape, double scaleX, double scaleY) {
-        AffineTransform at = AffineTransform.getScaleInstance(scaleX, scaleY);
-        g.setColor(Color.RED);
-        g.draw(at.createTransformedShape(shape));
-        g.fill(at.createTransformedShape(shape));
     }
 
 }
