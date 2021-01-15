@@ -14,46 +14,38 @@ public class Line {
         a = 1.0 * (end.y - start.y) / (end.x - start.x);
         b = start.y - a * start.x;
     }
-    
+
     public Point crossLines(Line with) {
+        if (start.equals(with.start) || start.equals(with.end) || end.equals(with.start) || end.equals(with.end)) {
+            return null;
+        }
         double left = a - with.a;
         double right = with.b - b;
         double x = right / left;
         double y = start.y + a * (x - start.x);
-        return new Point((int)x, (int)y);
+        return new Point((int) x, (int) y);
     }
-    
+
     public boolean contains(Point p) {
-        if (p.x == start.x && p.y == start.y || p.x == end.x && p.y == end.y) {
+        if (p.equals(start) || p.equals(end)) {
             return false;
+        } else {
+            return (p.x >= getLeftX() && p.x <= getRightX() && p.y >= getUpY() && p.y <= getDownY());
         }
-        int x_left = start.x;
-        int x_right = end.x;
-        if (x_left > x_right) {
-            x_left = x_right;
-            x_right = start.x;
-        }
-        int y_up = start.y;
-        int y_down = end.y;
-        if (y_up > y_down) {
-            y_up = y_down;
-            y_down = start.y;
-        }
-        return (p.x >= x_left && p.x <= x_right && p.y >= y_up && p.y <= y_down);
     }
-    
+
     public double length() {
         return Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
     }
 
-    public double distance(boolean from_start, Point p) {
-        if (from_start) {
-            return Math.sqrt(Math.pow(p.x - start.x, 2) + Math.pow(p.y - start.y, 2));
-        } else {
-            return Math.sqrt(Math.pow(p.x - end.x, 2) + Math.pow(p.y - end.y, 2));
-        }
+    public double distFromStart(Point p) {
+        return Math.sqrt(Math.pow(p.x - start.x, 2) + Math.pow(p.y - start.y, 2));
     }
-    
+
+    public double distFromEnd(boolean from_start, Point p) {
+        return Math.sqrt(Math.pow(p.x - end.x, 2) + Math.pow(p.y - end.y, 2));
+    }
+
     public static ArrayList<Line> makeLines(Hospital[] hos, Road[] ros) {
         ArrayList<Line> lines = new ArrayList<>();
         Point[] start = new Point[ros.length];
@@ -73,16 +65,69 @@ public class Line {
         return lines;
     }
     
+    public boolean startIsLeft() {
+        return start.x <= end.x;
+    }
+
+    public Point getStart() {
+        return start;
+    }
+
+    public Point getEnd() {
+        return end;
+    }
+
+    public int getLeftX() {
+        if (start.x < end.x) {
+            return start.x;
+        } else {
+            return end.x;
+        }
+    }
+
+    public int getRightX() {
+        if (start.x > end.x) {
+            return start.x;
+        } else {
+            return end.x;
+        }
+    }
+
+    public int getUpY() {
+        if (start.y < end.y) {
+            return start.y;
+        } else {
+            return end.y;
+        }
+    }
+
+    public int getDownY() {
+        if (start.y > end.y) {
+            return start.y;
+        } else {
+            return end.y;
+        }
+    }
+    
+    public Point getLeftPoint() {
+        if (start.x < end.x) {
+            return start;
+        } else {
+            return end;
+        }
+    }
+    
+    public Point getRightPoint() {
+        if (start.x > end.x) {
+            return start;
+        } else {
+            return end;
+        }
+    }
+
     @Override
     public String toString() {
         return start.x + " " + start.y + " -> " + end.x + " " + end.y;
     }
     
-    public Point getStart() {
-        return start;
-    }
-    
-    public Point getEnd() {
-        return end;
-    }
 }

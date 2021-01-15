@@ -1,6 +1,10 @@
 package gui;
 
 import eskulap.FileManager;
+import eskulap.NearestHospital;
+import floyd_warshall.Edge;
+import floyd_warshall.FloydWarshallAlgorithm;
+import floyd_warshall.Vertex;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -8,8 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.JFileChooser;
-import storage.Hospital;
-import storage.Road;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -17,11 +19,12 @@ import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import storage.Map;
+import storage.Patient;
 
 public class Board extends JFrame {
 
-    private Hospital[] hospitals;
-    private Road[] roads;
+    private Map map;
+    private FloydWarshallAlgorithm fwa;
     private final Graph graph;
     private final JTextArea console;
     private final JPanel box;
@@ -34,7 +37,7 @@ public class Board extends JFrame {
         graph = new Graph();
         console = makeConsole();
         box = new JPanel();
-        west_pane = new WestPane(new HospitalsChange(), new PatientsChange());
+        west_pane = new WestPane(new HospitalsFile(), new PatientsFile());
         initComponents();
     }
 
@@ -49,7 +52,7 @@ public class Board extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
     }
-    
+
     private JTextArea makeConsole() {
         JTextArea con = new JTextArea("Tutaj będzie tekst.\n");
         con.setPreferredSize(new Dimension(100, 100));
@@ -58,7 +61,22 @@ public class Board extends JFrame {
         con.setEditable(false);
         return con;
     }
-    
+
+    private void routePatient(Patient p) {
+        int closest = NearestHospital.findNearestHospital(map.getHospitals(), p).getId();
+        closest = fwa.findVertexId(closest);
+        int[] path = fwa.getPath(closest, fwa.getClosestVertex(closest));
+        for (int i = 0; i < path.length; i++) {
+            path[i]++;
+            print("" + path[i]);
+            if (i < path.length - 1) {
+                print(" -> ");
+            }
+        }
+        print("\n");
+        fwa.reset();
+    }
+
     public void print(String s) {
         console.setText(console.getText() + s);
     }
@@ -72,7 +90,7 @@ public class Board extends JFrame {
 
     }
 
-    private class HospitalsChange implements ActionListener {
+    private class HospitalsFile implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -81,8 +99,13 @@ public class Board extends JFrame {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 String path = fc.getSelectedFile().getAbsolutePath();
                 try {
-                    Map map = new FileManager().readHospitals(path);
+                    map = new FileManager().readHospitals(path);
+                    map.addCrossings();
                     graph.loadMap(map);
+                    System.out.print(map);
+                    Vertex[] ver = Vertex.vertexArray(map.getHospitals());
+                    fwa = new FloydWarshallAlgorithm(ver, Edge.edgeArray(ver, map.getRoads()));
+                    fwa.applyAlgorithm();
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
                 }
@@ -90,18 +113,30 @@ public class Board extends JFrame {
         }
 
     }
-    
-    private class PatientsChange implements ActionListener {
+
+    private class PatientsFile implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JFileChooser fc = new JFileChooser();
-            int returnVal = fc.showOpenDialog(new JPanel());
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                String path = fc.getSelectedFile().getAbsolutePath();
+            if (map != null) {
+                JFileChooser fc = new JFileChooser();
+                int returnVal = fc.showOpenDialog(new JPanel());
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    String path = fc.getSelectedFile().getAbsolutePath();
+                    try {
+                        Patient[] patients = new FileManager().readPatients(path);
+                        for (Patient p : patients) {
+                            routePatient(p);
+                        }
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(new JFrame(), "Najpierw wczytaj państwo!");
             }
         }
-        
+
     }
 
 }

@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Ellipse2D;
@@ -37,7 +36,6 @@ public class Graph extends JPanel {
     private void init() {
         setPreferredSize(new Dimension(X_SIZE, Y_SIZE));
         setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
-        setLayout(new GridLayout(1, 1));
     }
 
     public void loadMap(Map map) {
@@ -151,7 +149,7 @@ public class Graph extends JPanel {
             g.setColor(Color.WHITE);
             g.fillRect(0, 0, X_SIZE, Y_SIZE);
             g.setColor(Color.BLACK);
-            g.drawString("Wczytaj mapę.", X_SIZE / 2, Y_SIZE / 2);
+            g.drawString("Wczytaj państwo.", X_SIZE / 2, Y_SIZE / 2);
         }
     }
 

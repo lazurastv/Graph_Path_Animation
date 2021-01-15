@@ -47,8 +47,10 @@ public class WestPane extends JPanel {
         gbc.gridwidth = 2;
         gbc.gridx = 0;
         gbc.gridy = 5;
-        add(makeLabel("Prędkość programu:"), gbc);
+        add(makeButton(), gbc);
         gbc.gridy = 6;
+        add(makeLabel("Prędkość programu:"), gbc);
+        gbc.gridy = 7;
         add(slider, gbc);
     }
 
@@ -67,7 +69,14 @@ public class WestPane extends JPanel {
     }
     
     private JTextField makeTextField() {
-        return new JTextField();
+        JTextField jtf = new JTextField();
+        return jtf;
+    }
+    
+    private JButton makeButton() {
+        JButton button = new JButton("OK");
+        button.setHorizontalAlignment(CENTER);
+        return button;
     }
     
 }

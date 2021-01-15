@@ -20,6 +20,14 @@ public class Vertex {
         id = id_counter++;
         visited = h.getBedNumber() == 0;
     }
+    
+    public static Vertex[] vertexArray(Hospital[] hos) {
+        Vertex[] v = new Vertex[hos.length];
+        for (int i = 0; i < v.length; i++) {
+            v[i] = new Vertex(hos[i]);
+        }
+        return v;
+    }
 
     public int getId() {
         return id;

@@ -7,7 +7,7 @@ public class Road {
     private final double distance;
     
     public Road(int id, int idHospitalFirst, int idHospitalSecond, double distance) {
-        this.id =id;
+        this.id = id;
         this.idHospitalFirst = idHospitalFirst;
         this.idHospitalSecond = idHospitalSecond;
         this.distance = distance;

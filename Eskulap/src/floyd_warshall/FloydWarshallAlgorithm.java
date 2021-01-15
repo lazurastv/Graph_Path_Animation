@@ -6,11 +6,11 @@ import java.util.LinkedList;
 public class FloydWarshallAlgorithm {
 
 	private static final double MAX = Double.MAX_VALUE;
-	private Vertex[] vertices;
-	private Edge[] edges;
-	private double[][] distMatrix;
-	private int[][] nextVertexMatrix;
-	private boolean[] visited;
+	private final Vertex[] vertices;
+	private final Edge[] edges;
+	private final double[][] distMatrix;
+	private final int[][] nextVertexMatrix;
+	private final boolean[] visited;
 
 	public FloydWarshallAlgorithm(Vertex[] vertices, Edge[] edges) {
 		this.vertices = vertices;
@@ -18,10 +18,23 @@ public class FloydWarshallAlgorithm {
 		distMatrix = new double[vertices.length][vertices.length];
 		nextVertexMatrix = new int[vertices.length][vertices.length];
 		visited = new boolean[vertices.length];
-		fillVisited(vertices);
+		fillVisited();
 	}
+        
+        public int findVertexId(int hos_id) {
+            for (Vertex v : vertices) {
+                if (v.getOrgId() == hos_id) {
+                    return v.getId();
+                }
+            }
+            return -1;
+        }
+        
+        public void reset() {
+            fillVisited();
+        }
 
-	public void fillVisited(Vertex[] vertices) {
+	private void fillVisited() {
 		for (int i = 0; i < vertices.length; i++) {
 			visited[i] = vertices[i].getVisited();
 		}
@@ -67,11 +80,11 @@ public class FloydWarshallAlgorithm {
 		}
 
 		LinkedList<Integer> path = new LinkedList<>();
-		path.addLast(Integer.valueOf(start));
+		path.addLast(start);
 
 		while (start != end) {
 			start = nextVertexMatrix[start][end];
-			path.addLast(Integer.valueOf(start));
+			path.addLast(start);
 		}
 
 		return path.stream().mapToInt(Integer::intValue).toArray();
