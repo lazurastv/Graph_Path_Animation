@@ -1,7 +1,6 @@
 package gui;
 
 import eskulap.FileManager;
-import eskulap.NearestHospital;
 import floyd_warshall.Edge;
 import floyd_warshall.FloydWarshallAlgorithm;
 import floyd_warshall.Vertex;
@@ -63,7 +62,7 @@ public class Board extends JFrame {
     }
 
     private void routePatient(Patient p) {
-        int closest = NearestHospital.findNearestHospital(map.getHospitals(), p).getId();
+        int closest = p.findNearestHospital(map.getHospitals());
         closest = fwa.findVertexId(closest);
         int[] path = fwa.getPath(closest, fwa.getClosestVertex(closest));
         for (int i = 0; i < path.length; i++) {
