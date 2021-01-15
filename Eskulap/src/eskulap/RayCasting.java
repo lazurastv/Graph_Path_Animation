@@ -14,7 +14,9 @@ class Point {
         return this.x + " " + this.y;
     }
 }
+
 public class RayCasting {
+
     static boolean isIntersecting(Point A, Point B, Point p) {
         if (A.y > B.y) {
             Point tmp = new Point(A.x, A.y);
@@ -53,15 +55,23 @@ public class RayCasting {
         int next = -1;
         while (next != 0) {
             if (polygon[i].x == p.x && polygon[i].y == p.y) {
-                return true;
+                return false;
             }
             next = (i + 1) % n;
+            boolean onEdge = false;
             if (polygon[i].y == p.y || polygon[next].y == p.y) {
-                p.y = p.y + 0.00001;
+                p.y = p.y + 0.0001;
+                onEdge = true;
             }
-            
+
             if (isIntersecting(polygon[i], polygon[next], p)) {
                 inside = !inside;
+                if (onEdge) {
+                    p.y = p.y - 0.0002;
+                    if (!isIntersecting(polygon[i], polygon[next], p)) {
+                        return false;
+                    }
+                }
             } else {
                 i = next;
                 continue;
@@ -69,5 +79,4 @@ public class RayCasting {
             i = next;
         }
         return inside;
- }
-}
+    }
