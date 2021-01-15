@@ -15,7 +15,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import storage.Map;
@@ -47,27 +49,38 @@ public class Board extends JFrame {
         box.setLayout(new BorderLayout());
         box.add(west_pane, BorderLayout.LINE_START);
         box.add(graph, BorderLayout.CENTER);
-        box.add(console, BorderLayout.PAGE_END);
+        box.add(makeScrollPane(), BorderLayout.PAGE_END);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
+        pack();
+    }
+
+    private JScrollPane makeScrollPane() {
+        JScrollPane sp = new JScrollPane(console);
+        sp.setPreferredSize(new Dimension(100, 100));
+        sp.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
+        sp.setEnabled(true);
+        sp.setAutoscrolls(true);
+        return sp;
     }
 
     private JTextArea makeConsole() {
         JTextArea con = new JTextArea("Tutaj będzie tekst.\n");
-        con.setPreferredSize(new Dimension(100, 100));
+        con.setPreferredSize(new Dimension(100, 400));
         con.setForeground(Color.WHITE);
         con.setBackground(Color.BLACK);
-        con.setEditable(false);
+        con.setLineWrap(true);
+        //con.setEditable(false);
         return con;
     }
 
-    private void routePatient(Patient p) {
-        int closest = NearestHospital.findNearestHospital(map.getHospitals(), p).getId();
+    private void routePatients(Patient[] p) {
+        int closest = NearestHospital.findNearestHospital(map.getHospitals(), p[0]).getId();
         closest = fwa.findVertexId(closest);
         int[] path = fwa.getPath(closest, fwa.getClosestVertex(closest));
+        graph.loadPatient(p[0], path);
         for (int i = 0; i < path.length; i++) {
-            path[i]++;
             print("" + path[i]);
             if (i < path.length - 1) {
                 print(" -> ");
@@ -125,9 +138,7 @@ public class Board extends JFrame {
                     String path = fc.getSelectedFile().getAbsolutePath();
                     try {
                         Patient[] patients = new FileManager().readPatients(path);
-                        for (Patient p : patients) {
-                            routePatient(p);
-                        }
+                        routePatients(patients);
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
                     }

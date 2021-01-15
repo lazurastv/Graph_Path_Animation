@@ -5,14 +5,18 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Ellipse2D;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import storage.Construction;
 import storage.Hospital;
 import storage.Map;
+import storage.Patient;
 import storage.Road;
 
 public class Graph extends JPanel {
@@ -20,14 +24,20 @@ public class Graph extends JPanel {
     private Rectangle2D[] hospitals;
     private Ellipse2D[] constructs;
     private Line2D[] roads;
+    private Patient patient;
+    private int[] path;
     private double scaleX;
     private double scaleY;
-    private int x_offset;
-    private int y_offset;
+    private int minimum_x;
+    private int minimum_y;
+    private int maximum_x;
+    private int maximum_y;
+    private Timer animation;
     private static final int X_SIZE = 1000;
     private static final int Y_SIZE = 500;
     private static final int RADIUS = 10;
-    private static final int SPACE = 10;
+    private static final int PATIENT_RADIUS = 5;
+    private static final int SPACE = 50;
 
     public Graph() {
         init();
@@ -36,6 +46,116 @@ public class Graph extends JPanel {
     private void init() {
         setPreferredSize(new Dimension(X_SIZE, Y_SIZE));
         setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
+    }
+
+    private void animate() {
+        if (animation != null) {
+            animation.cancel();
+        }
+        animation = new Timer();
+        animation.scheduleAtFixedRate(new animTask(), 0, 50);
+    }
+
+    public boolean patientExists() {
+        return patient != null;
+    }
+
+    private class animTask extends TimerTask {
+
+        int i;
+        double p_x, p_y;
+        double dx, dy;
+        Point target;
+        Point start;
+
+        private animTask() {
+            i = 0;
+            start = patient.getWsp();
+            p_x = patient.getWsp().x;
+            p_y = patient.getWsp().y;
+            getTarget();
+            getLine();
+        }
+
+        private int getDx() {
+            int dX = target.x - start.x;
+            if (dX < 0) {
+                dX = -1;
+            } else {
+                dX = 1;
+            }
+            return dX;
+        }
+
+        private int getDy() {
+            int dY = target.y - start.y;
+            if (dY < 0) {
+                dY = -1;
+            } else {
+                dY = 1;
+            }
+            return dY;
+        }
+
+        private void getTarget() {
+            target = new Point((int) hospitals[path[i]].getCenterX(), (int) hospitals[path[i]].getCenterY());
+        }
+
+        private boolean crossedX() {
+            return (target.x - start.x) * (target.x - patient.getWsp().x) <= 0;
+        }
+
+        private boolean crossedY() {
+            return (target.y - start.y) * (target.y - patient.getWsp().y) <= 0;
+        }
+
+        private double direction() {
+            return 1.0 * (target.y - patient.getWsp().y) / (target.x - patient.getWsp().x);
+        }
+
+        private void getLine() {
+            dx = getDx();
+            dy = direction();
+            System.out.println(dx + " " + dy);
+            if (Double.isInfinite(dy)) {
+                dx = 0;
+                dy = getDy();
+            } else if (dy > -1 && dy != 0 && dy < 1) {
+                dx /= Math.abs(dy);
+                dy = getDy();
+            }
+            System.out.println(dx + " " + dy);
+        }
+
+        @Override
+        public void run() {
+            repaint();
+            p_x += dx;
+            p_y += dy;
+            patient.move((int) p_x, (int) p_y);
+            if (crossedX() && crossedY()) {
+                patient.move(target.x, target.y);
+                p_x = patient.getWsp().x;
+                p_y = patient.getWsp().y;
+                repaint();
+                if (++i < path.length) {
+                    start = patient.getWsp();
+                    getTarget();
+                    getLine();
+                } else {
+                    patient = null;
+                    cancel();
+                }
+            }
+        }
+
+    }
+
+    public void loadPatient(Patient p, int[] pth) {
+        patient = p;
+        p.move(scale_x(p.getWsp().x), scale_y(p.getWsp().y));
+        path = pth;
+        animate();
     }
 
     public void loadMap(Map map) {
@@ -69,13 +189,13 @@ public class Graph extends JPanel {
         }
         repaint();
     }
-    
+
     private int scale_x(int x) {
-        return (int)(scaleX * (x - x_offset)) + SPACE + RADIUS;
+        return (int) (scaleX * (x - minimum_x)) + SPACE + RADIUS;
     }
-    
+
     private int scale_y(int y) {
-        return (int)(scaleY * (y - y_offset)) + SPACE + RADIUS;
+        return (int) (scaleY * (y - minimum_y)) + SPACE + RADIUS;
     }
 
     private void findScale(Hospital[] hos, Construction[] con) {
@@ -113,8 +233,18 @@ public class Graph extends JPanel {
         }
         scaleX = (X_SIZE - 2 * SPACE) / (maxX - minX);
         scaleY = (Y_SIZE - 2 * SPACE) / (maxY - minY);
-        x_offset = minX;
-        y_offset = minY;
+        minimum_x = minX;
+        minimum_y = minY;
+        maximum_x = maxX;
+        maximum_y = maxY;
+    }
+
+    private void drawAxis(Graphics g) {
+        g.setColor(Color.BLACK);
+        g.drawString("" + minimum_x, 2 * SPACE, Y_SIZE - SPACE);
+        g.drawString("" + maximum_x, X_SIZE - SPACE, Y_SIZE - SPACE);
+        g.drawString("" + minimum_y, SPACE, SPACE);
+        g.drawString("" + maximum_y, SPACE, Y_SIZE - 2 * SPACE);
     }
 
     @Override
@@ -126,7 +256,10 @@ public class Graph extends JPanel {
         Integer hos_index = 1;
         Integer con_index = 1;
 
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, X_SIZE, Y_SIZE);
         if (hospitals != null) {
+            drawAxis(g);
             for (Rectangle2D r : hospitals) {
                 g.setColor(Color.RED);
                 g.fill(r);
@@ -145,9 +278,11 @@ public class Graph extends JPanel {
                 g.setColor(Color.RED);
                 g.draw(l);
             }
+            if (patient != null) {
+                g.setColor(Color.GREEN);
+                g.fillOval(patient.getWsp().x - PATIENT_RADIUS, patient.getWsp().y - PATIENT_RADIUS, 2 * PATIENT_RADIUS, 2 * PATIENT_RADIUS);
+            }
         } else {
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, X_SIZE, Y_SIZE);
             g.setColor(Color.BLACK);
             g.drawString("Wczytaj państwo.", X_SIZE / 2, Y_SIZE / 2);
         }

@@ -9,7 +9,12 @@ public class Patient {
 
     public Patient(int id, int wspx, int wspy) {
         this.id = id;
-        this.wsp = new Point(wspx, wspy);
+        wsp = new Point(wspx, wspy);
+    }
+    
+    public void move(int x, int y) {
+        wsp.x = x;
+        wsp.y = y;
     }
 
     @Override
