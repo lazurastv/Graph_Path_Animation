@@ -12,6 +12,11 @@ public class Patient {
         wsp = new Point(wspx, wspy);
     }
     
+    public Patient(int id, Point p) {
+        this.id = id;
+        wsp = p;
+    }
+    
     public void move(int x, int y) {
         wsp.x = x;
         wsp.y = y;

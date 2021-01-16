@@ -2,109 +2,119 @@ package floyd_warshall;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import storage.Map;
 
 public class FloydWarshallAlgorithm {
 
-	private static final double MAX = Double.MAX_VALUE;
-	private final Vertex[] vertices;
-	private final Edge[] edges;
-	private final double[][] distMatrix;
-	private final int[][] nextVertexMatrix;
-	private final boolean[] visited;
+    private final Vertex[] vertices;
+    private final Edge[] edges;
+    private final double[][] distMatrix;
+    private final int[][] nextVertexMatrix;
+    private final boolean[] visited;
+    private static final double MAX = Double.MAX_VALUE;
 
-	public FloydWarshallAlgorithm(Vertex[] vertices, Edge[] edges) {
-		this.vertices = vertices;
-		this.edges = edges;
-		distMatrix = new double[vertices.length][vertices.length];
-		nextVertexMatrix = new int[vertices.length][vertices.length];
-		visited = new boolean[vertices.length];
-		fillVisited();
-	}
-        
-        public void reset() {
-            fillVisited();
+    public FloydWarshallAlgorithm(Map map) {
+        vertices = Vertex.vertexArray(map.getHospitals());
+        edges = Edge.edgeArray(vertices, map.getRoads());
+        distMatrix = new double[vertices.length][vertices.length];
+        nextVertexMatrix = new int[vertices.length][vertices.length];
+        visited = new boolean[vertices.length];
+        fillVisited();
+    }
+
+    public FloydWarshallAlgorithm(Vertex[] vertices, Edge[] edges) {
+        this.vertices = vertices;
+        this.edges = edges;
+        distMatrix = new double[vertices.length][vertices.length];
+        nextVertexMatrix = new int[vertices.length][vertices.length];
+        visited = new boolean[vertices.length];
+        fillVisited();
+    }
+
+    public void reset() {
+        fillVisited();
+    }
+
+    private void fillVisited() {
+        for (int i = 0; i < vertices.length; i++) {
+            visited[i] = vertices[i].getVisited();
         }
 
-	private void fillVisited() {
-		for (int i = 0; i < vertices.length; i++) {
-			visited[i] = vertices[i].getVisited();
-		}
+    }
 
-	}
+    public void applyAlgorithm() {
+        for (int i = 0; i < vertices.length; i++) {
+            Arrays.fill(distMatrix[i], MAX);
+            Arrays.fill(nextVertexMatrix[i], -1);
+        }
 
-	public void applyAlgorithm() {
-		for (int i = 0; i < vertices.length; i++) {
-			Arrays.fill(distMatrix[i], MAX);
-			Arrays.fill(nextVertexMatrix[i], -1);
-		}
+        for (Edge edge : edges) {
+            distMatrix[edge.getStartVertexId()][edge.getEndVertexId()] = edge.getDistance();
+            nextVertexMatrix[edge.getStartVertexId()][edge.getEndVertexId()] = edge.getEndVertexId();
+            distMatrix[edge.getEndVertexId()][edge.getStartVertexId()] = edge.getDistance();
+            nextVertexMatrix[edge.getEndVertexId()][edge.getStartVertexId()] = edge.getStartVertexId();
+        }
 
-		for (Edge edge : edges) {
-			distMatrix[edge.getStartVertexId()][edge.getEndVertexId()] = edge.getDistance();
-			nextVertexMatrix[edge.getStartVertexId()][edge.getEndVertexId()] = edge.getEndVertexId();
-			distMatrix[edge.getEndVertexId()][edge.getStartVertexId()] = edge.getDistance();
-			nextVertexMatrix[edge.getEndVertexId()][edge.getStartVertexId()] = edge.getStartVertexId();
-		}
+        for (Vertex vertex : vertices) {
+            distMatrix[vertex.getId()][vertex.getId()] = 0;
+            nextVertexMatrix[vertex.getId()][vertex.getId()] = vertex.getId();
+        }
 
-		for (Vertex vertex : vertices) {
-			distMatrix[vertex.getId()][vertex.getId()] = 0;
-			nextVertexMatrix[vertex.getId()][vertex.getId()] = vertex.getId();
-		}
+        for (int k = 0; k < vertices.length; k++) {
+            for (int i = 0; i < vertices.length; i++) {
+                for (int j = 0; j < vertices.length; j++) {
+                    if (distMatrix[i][k] != MAX && distMatrix[k][j] != MAX) {
+                        if (distMatrix[i][j] > distMatrix[i][k] + distMatrix[k][j]) {
+                            distMatrix[i][j] = distMatrix[i][k] + distMatrix[k][j];
+                            nextVertexMatrix[i][j] = nextVertexMatrix[i][k];
+                        }
+                    }
+                }
+            }
+        }
 
-		for (int k = 0; k < vertices.length; k++) {
-			for (int i = 0; i < vertices.length; i++) {
-				for (int j = 0; j < vertices.length; j++) {
-					if (distMatrix[i][k] != MAX && distMatrix[k][j] != MAX) {
-						if (distMatrix[i][j] > distMatrix[i][k] + distMatrix[k][j]) {
-							distMatrix[i][j] = distMatrix[i][k] + distMatrix[k][j];
-							nextVertexMatrix[i][j] = nextVertexMatrix[i][k];
-						}
-					}
-				}
-			}
-		}
+    }
 
-	}
+    public int[] getPath(int start, int end) {
+        if (nextVertexMatrix[start][end] == -1) {
+            return null;
+        }
 
-	public int[] getPath(int start, int end) {
-		if (nextVertexMatrix[start][end] == -1) {
-			return null;
-		}
+        LinkedList<Integer> path = new LinkedList<>();
+        path.addLast(start);
 
-		LinkedList<Integer> path = new LinkedList<>();
-		path.addLast(start);
+        while (start != end) {
+            start = nextVertexMatrix[start][end];
+            path.addLast(start);
+        }
 
-		while (start != end) {
-			start = nextVertexMatrix[start][end];
-			path.addLast(start);
-		}
+        return path.stream().mapToInt(Integer::intValue).toArray();
+    }
 
-		return path.stream().mapToInt(Integer::intValue).toArray();
-	}
+    public int getClosestVertex(int start) {
+        int end = 0;
 
-	public int getClosestVertex(int start) {
-		int end = 0;
+        if (start == 0) {
+            end = 1;
+        }
 
-		if (start == 0) {
-			end = 1;
-		}
+        double endDist = distMatrix[start][end];
 
-		double endDist = distMatrix[start][end];
+        for (int i = end + 1; i < vertices.length; i++) {
+            double temp = distMatrix[start][i];
+            if (temp < endDist && visited[i] == false && temp != 0.0) {
+                endDist = temp;
+                end = i;
+            }
+        }
 
-		for (int i = end + 1; i < vertices.length; i++) {
-			double temp = distMatrix[start][i];
-			if (temp < endDist && visited[i] == false && temp != 0.0) {
-				endDist = temp;
-				end = i;
-			}
-		}
+        if (endDist == MAX || visited[end] == true) {
+            return -1;
+        }
 
-		if (endDist == MAX || visited[end] == true) {
-			return -1;
-		}
+        visited[end] = true;
 
-		visited[end] = true;
-
-		return end;
-	}
+        return end;
+    }
 
 }
