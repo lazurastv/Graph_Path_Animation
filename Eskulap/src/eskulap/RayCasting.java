@@ -1,52 +1,52 @@
 package eskulap;
 
-class Point {
+import java.awt.Point;
+import java.awt.geom.Point2D;
 
-    double x, y;
-
-    public Point(double x, double y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    @Override
-    public String toString() {
-        return this.x + " " + this.y;
-    }
+class PointOnEdgeException extends Exception {
 }
-
 public class RayCasting {
 
-    static boolean isIntersecting(Point A, Point B, Point p) {
-        if (A.y > B.y) {
-            Point tmp = new Point(A.x, A.y);
-            A.x = B.x;
-            A.y = B.y;
-            B.x = tmp.x;
-            B.y = tmp.y;
+    private static boolean isIntersecting(Point2D A, Point2D B, Point2D p) throws PointOnEdgeException {
+        if (A.getY() > B.getY()) {
+            Point2D tmp = new Point2D.Double(A.getX(), A.getY());
+            A.setLocation(B);
+            B.setLocation(tmp);
         }
-        if (p.y > B.y || p.y < A.y || p.x > Math.max(A.x, B.x)) {
+        double minX = Math.min(A.getX(), B.getX());
+        double maxX = Math.max(A.getX(), B.getX());
+        if (p.getY() > B.getY() || p.getY() < A.getY() || p.getX() > maxX) {
             return false;
         }
-        if (p.x < Math.min(A.x, B.x)) {
+        if (p.getX() < minX) {
             return true;
         }
-        double a_edge;
-        double a_point;
-        if ((B.x - A.x) != 0) {
-            a_edge = (B.y - A.y) / (B.x - A.x);
+        double aEdge;
+        if ((B.getX() - A.getX()) != 0) {
+            aEdge = (B.getY() - A.getY()) / (B.getX() - A.getX());
+        } else if (p.getX() == A.getX()) {
+            throw new PointOnEdgeException();
         } else {
-            a_edge = Double.MAX_VALUE;
+            return p.getX() < minX;
         }
-        if ((p.x - A.x) != 0) {
-            a_point = (p.y - A.y) / (p.x - A.x);
+        double aPoint;
+        if (p.getX() == A.getX()) {
+            if (A.getY() == p.getY()) {
+                throw new PointOnEdgeException();
+            } else {
+                return A.getX() < B.getX();
+            }
         } else {
-            a_point = Double.MAX_VALUE;
+            aPoint = (p.getY() - A.getY()) / (p.getX() - A.getX());
         }
-        return a_point >= a_edge;
+        if (aPoint == aEdge) {
+            throw new PointOnEdgeException();
+        }
+        return aPoint > aEdge;
     }
 
-    static boolean isInside(Point polygon[], int n, Point p) {
+    public boolean isInside(Point polygon[], int n, Point point) {
+        Point2D p = (Point2D) point;
         boolean inside = false;
         if (n < 3) {
             return inside;
@@ -54,27 +54,25 @@ public class RayCasting {
         int i = 0;
         int next = -1;
         while (next != 0) {
-            if (polygon[i].x == p.x && polygon[i].y == p.y) {
-                return false;
-            }
             next = (i + 1) % n;
-            boolean onEdge = false;
-            if (polygon[i].y == p.y || polygon[next].y == p.y) {
-                p.y = p.y + 0.0001;
-                onEdge = true;
-            }
-
-            if (isIntersecting(polygon[i], polygon[next], p)) {
-                inside = !inside;
-                if (onEdge) {
-                    p.y = p.y - 0.0002;
-                    if (!isIntersecting(polygon[i], polygon[next], p)) {
-                        return false;
+            Point2D vertex1 = new Point2D.Double(polygon[i].x, polygon[i].y);
+            Point2D vertex2 = new Point2D.Double(polygon[next].x, polygon[next].y);
+            try {
+                if (vertex1.getY() == p.getY() || vertex2.getY() == p.getY()) {
+                    if (isIntersecting(vertex1, vertex2, new Point2D.Double(p.getX(), p.getY() + 0.001))) {
+                        inside = !inside;
+                        if (!isIntersecting(vertex1, vertex2, new Point2D.Double(p.getX(), p.getY() - 0.001))) {
+                            return false;
+                        }
+                    } else {
+                        i = next;
+                        continue;
                     }
+                } else if (isIntersecting(vertex1, vertex2, p)) {
+                    inside = !inside;
                 }
-            } else {
-                i = next;
-                continue;
+            } catch (PointOnEdgeException ex) {
+                return false;
             }
             i = next;
         }
