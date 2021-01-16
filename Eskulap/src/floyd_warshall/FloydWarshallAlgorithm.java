@@ -21,15 +21,6 @@ public class FloydWarshallAlgorithm {
 		fillVisited();
 	}
         
-        public int findVertexId(int hos_id) {
-            for (Vertex v : vertices) {
-                if (v.getOrgId() == hos_id) {
-                    return v.getId();
-                }
-            }
-            return -1;
-        }
-        
         public void reset() {
             fillVisited();
         }

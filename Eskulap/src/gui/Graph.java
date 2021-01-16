@@ -1,14 +1,17 @@
 package gui;
 
+import eskulap.JarvisMarch;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Ellipse2D;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.BorderFactory;
@@ -24,6 +27,7 @@ public class Graph extends JPanel {
     private Rectangle2D[] hospitals;
     private Ellipse2D[] constructs;
     private Line2D[] roads;
+    private Polygon borders;
     private Patient patient;
     private int[] path;
     private double scaleX;
@@ -116,7 +120,6 @@ public class Graph extends JPanel {
         private void getLine() {
             dx = getDx();
             dy = direction();
-            System.out.println(dx + " " + dy);
             if (Double.isInfinite(dy)) {
                 dx = 0;
                 dy = getDy();
@@ -124,7 +127,6 @@ public class Graph extends JPanel {
                 dx /= Math.abs(dy);
                 dy = getDy();
             }
-            System.out.println(dx + " " + dy);
         }
 
         @Override
@@ -162,23 +164,31 @@ public class Graph extends JPanel {
         Hospital[] hos = map.getHospitals();
         Construction[] con = map.getConstructs();
         Road[] ros = map.getRoads();
+        ArrayList<Point> points = new ArrayList<>();
         findScale(hos, con);
         hospitals = new Rectangle2D[hos.length];
         for (int i = 0; i < hospitals.length; i++) {
+            points.add(hos[i].getWsp());
             int x = scale_x(hos[i].getWsp().x);
             int y = scale_y(hos[i].getWsp().y);
-            if (hos[i].getBedNumber() != 0) {
-                hospitals[i] = new Rectangle2D.Double(x - RADIUS, y - RADIUS, 2 * RADIUS, 2 * RADIUS);
-            } else {
-                hospitals[i] = new Rectangle2D.Double(x - 2, y - 5, 4, 10);
-            }
+            hospitals[i] = new Rectangle2D.Double(x - RADIUS, y - RADIUS, 2 * RADIUS, 2 * RADIUS);
         }
         constructs = new Ellipse2D[con.length];
         for (int i = 0; i < constructs.length; i++) {
+            points.add(con[i].getWsp());
             int x = scale_x(con[i].getWsp().x);
             int y = scale_y(con[i].getWsp().y);
             constructs[i] = new Ellipse2D.Double(x - RADIUS, y - RADIUS, RADIUS * 2, RADIUS * 2);
         }
+        points = new JarvisMarch().calculateBorder(points.toArray(new Point[0]), points.size());
+        int[] xpoints = new int[points.size()];
+        int[] ypoints = new int[points.size()];
+        for (int i = 0; i < points.size(); i++) {
+            Point p = points.get(i);
+            xpoints[i] = scale_x(p.x);
+            ypoints[i] = scale_y(p.y);
+        }
+        borders = new Polygon(xpoints, ypoints, points.size());
         roads = new Line2D[ros.length];
         for (int i = 0; i < ros.length; i++) {
             int x_0 = scale_x(hos[ros[i].getIdFirst() - 1].getWsp().x);
@@ -256,10 +266,12 @@ public class Graph extends JPanel {
         Integer hos_index = 1;
         Integer con_index = 1;
 
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, X_SIZE, Y_SIZE);
         if (hospitals != null) {
             drawAxis(g);
+            g.setColor(Color.LIGHT_GRAY);
+            g.fillRect(0, 0, X_SIZE, Y_SIZE);
+            g.setColor(Color.WHITE);
+            g.fillPolygon(borders);
             for (Rectangle2D r : hospitals) {
                 g.setColor(Color.RED);
                 g.fill(r);
@@ -283,6 +295,8 @@ public class Graph extends JPanel {
                 g.fillOval(patient.getWsp().x - PATIENT_RADIUS, patient.getWsp().y - PATIENT_RADIUS, 2 * PATIENT_RADIUS, 2 * PATIENT_RADIUS);
             }
         } else {
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, X_SIZE, Y_SIZE);
             g.setColor(Color.BLACK);
             g.drawString("Wczytaj państwo.", X_SIZE / 2, Y_SIZE / 2);
         }

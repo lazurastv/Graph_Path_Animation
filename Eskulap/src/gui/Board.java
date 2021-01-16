@@ -76,7 +76,6 @@ public class Board extends JFrame {
 	
     private void routePatient(Patient p) {
         int closest = p.findNearestHospital(map.getHospitals());
-        closest = fwa.findVertexId(closest);
         int[] path = fwa.getPath(closest, fwa.getClosestVertex(closest));
         graph.loadPatient(p, path);
         for (int i = 0; i < path.length; i++) {
@@ -137,7 +136,7 @@ public class Board extends JFrame {
                     String path = fc.getSelectedFile().getAbsolutePath();
                     try {
                         Patient[] patients = new FileManager().readPatients(path);
-                        routePatients(patients);
+                        routePatient(patients[0]);
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
                     }
