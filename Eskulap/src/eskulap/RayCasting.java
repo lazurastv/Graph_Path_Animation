@@ -5,6 +5,7 @@ import java.awt.geom.Point2D;
 
 class PointOnEdgeException extends Exception {
 }
+
 public class RayCasting {
 
     private static boolean isIntersecting(Point2D A, Point2D B, Point2D p) throws PointOnEdgeException {

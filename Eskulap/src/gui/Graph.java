@@ -1,6 +1,7 @@
 package gui;
 
 import eskulap.JarvisMarch;
+import eskulap.RayCasting;
 import floyd_warshall.FloydWarshallAlgorithm;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -32,7 +33,8 @@ public class Graph extends JPanel {
     private Rectangle2D[] hospitals;
     private Ellipse2D[] constructs;
     private Line2D[] roads;
-    private Polygon borders;
+    private Point[] border_points;
+    private Polygon border;
     private Patient patient;
     private int[] path;
     private double scaleX;
@@ -64,7 +66,7 @@ public class Graph extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (center_pane.getBoard().getWest().mapLoaded() && !patientLoaded() && e.isControlDown()) {
-                    loadPatient(new Patient(0,e.getPoint()));
+                    loadPatient(new Patient(0, e.getPoint()));
                 }
             }
         });
@@ -193,17 +195,30 @@ public class Graph extends JPanel {
     }
 
     public void loadPatient(Patient p) {
+        patient = p;
         if (center_pane.getBoard().getWest().mapLoaded()) {
-            patient = p;
-            routePatient();
+            if (new RayCasting().isInside(border_points, border_points.length, patient.getWsp())) {
+                routePatient();
+            } else {
+                JOptionPane.showMessageDialog(new JFrame(), "Pacjent jest poza granicami państwa.");
+            }
         } else {
             JOptionPane.showMessageDialog(new JFrame(), "Najpierw wczytaj państwo!");
         }
     }
-    
+
     public void scalePatient(Patient p) {
-        p.move(scale_x(p.getWsp().x), scale_y(p.getWsp().y));
-        loadPatient(p);
+        patient = p;
+        for (Point pt : border_points) {
+            System.out.println(pt);
+        }
+        System.out.println(p.getWsp());
+        if (new RayCasting().isInside(border_points, border_points.length, patient.getWsp())) {
+            patient.move(scale_x(p.getWsp().x), scale_y(p.getWsp().y));
+            routePatient();
+        } else {
+            JOptionPane.showMessageDialog(new JFrame(), "Pacjent jest poza granicami państwa.");
+        }
     }
 
     private void routePatient() {
@@ -244,12 +259,14 @@ public class Graph extends JPanel {
         points = new JarvisMarch().calculateBorder(points.toArray(new Point[0]), points.size());
         int[] xpoints = new int[points.size()];
         int[] ypoints = new int[points.size()];
+        border_points = new Point[points.size()];
         for (int i = 0; i < points.size(); i++) {
             Point p = points.get(i);
+            border_points[i] = p;
             xpoints[i] = scale_x(p.x);
             ypoints[i] = scale_y(p.y);
         }
-        borders = new Polygon(xpoints, ypoints, points.size());
+        border = new Polygon(xpoints, ypoints, points.size());
         roads = new Line2D[ros.length];
         for (int i = 0; i < ros.length; i++) {
             int x_0 = scale_x(hos[ros[i].getIdFirst() - 1].getWsp().x);
@@ -366,7 +383,7 @@ public class Graph extends JPanel {
             g.setColor(Color.LIGHT_GRAY);
             g.fillRect(0, 0, X_SIZE, Y_SIZE);
             g.setColor(Color.WHITE);
-            g.fillPolygon(borders);
+            g.fillPolygon(border);
             if (draw_hospitals) {
                 drawHospitals(g);
             }

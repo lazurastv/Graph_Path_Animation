@@ -5,7 +5,7 @@ import java.awt.Point;
 
 public class JarvisMarch {
 
-    public boolean isClockwise(Point a, Point b, Point c) {
+    private boolean isClockwise(Point a, Point b, Point c) {
         int crossProductAngleSign = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
         if (crossProductAngleSign < 0) {
             return true;
