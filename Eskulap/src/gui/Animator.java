@@ -38,18 +38,22 @@ public class Animator extends Thread {
             patient = patients.get(0).clone();
             patients.remove(0);
             graph.setPatient(patient);
-            i = 0;
             fwa.reset();
             Patient tmp_p = new Patient(0, graph.unscale_x(patient.getWsp().x), graph.unscale_y(patient.getWsp().y));
             int close = tmp_p.findNearestHospital(map.getHospitals());
-            path = fwa.getPath(close, fwa.getClosestVertex(close));
-            graph.getCenter().print("Pacjent " + patient.getId() + " -> " + map.getHospitals()[path[i]].getId() + " -> są miejsca.\n");
-            start = (Point) patient.getWsp().clone();
-            p_x = patient.getWsp().x;
-            p_y = patient.getWsp().y;
-            getTarget();
-            getLine();
+            setupLine(close, 0);
         }
+    }
+
+    private void setupLine(int from, int skip) {
+        i = skip;
+        path = fwa.getPath(from, fwa.getClosestVertex(from));
+        graph.getCenter().print("Pacjent " + patient.getId() + " -> Szpital " + map.getHospitals()[path[i]].getId());
+        start = (Point) patient.getWsp().clone();
+        p_x = patient.getWsp().x;
+        p_y = patient.getWsp().y;
+        getTarget();
+        getLine();
     }
 
     public void setPercent(int per) {
@@ -115,7 +119,7 @@ public class Animator extends Thread {
                 graph.repaint();
                 long time = System.currentTimeMillis();
                 while (System.currentTimeMillis() - time < MIN_DELAY * 100 / percent) {
-                };
+                }
                 p_x += dx;
                 p_y += dy;
                 patient.move((int) p_x, (int) p_y);
@@ -124,13 +128,26 @@ public class Animator extends Thread {
                     p_x = patient.getWsp().x;
                     p_y = patient.getWsp().y;
                     graph.repaint();
-                    if (++i < path.length) {
-                        graph.getCenter().print("Pacjent " + patient.getId() + " -> " + map.getHospitals()[path[i]].getId() + " -> są miejsca.\n");
+                    if (i == 0 || i + 1 == path.length) {
+                        int ret = map.getHospitals()[path[i]].addPatient(fwa.getVisited());
+                        switch (ret) {
+                            case 0:
+                                graph.getCenter().print(" -> Jest miejsce.\n");
+                                patient = null;
+                                break;
+                            case -1:
+                                graph.getCenter().print(" -> Brak miejsc.\n");
+                                setupLine(path[i], 1);
+                                break;
+                            case -2:
+                                graph.getCenter().print(" -> Dodano do kolejki.\n");
+                                patient = null;
+                        }
+                    } else {
+                        graph.getCenter().print(" -> Szpital " + map.getHospitals()[path[++i]].getId());
                         start = (Point) patient.getWsp().clone();
                         getTarget();
                         getLine();
-                    } else {
-                        patient = null;
                     }
                 }
             }

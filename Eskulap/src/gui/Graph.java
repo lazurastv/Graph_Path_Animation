@@ -81,12 +81,12 @@ public class Graph extends JPanel {
                                 && map.getHospitals()[i].getBedNumber() != 0) {
                             hovered_id = i;
                             label = e.getPoint();
-                            repaint();
                             break;
                         } else if (i == hospitals.length - 1) {
                             hovered_id = -1;
                         }
                     }
+                    repaint();
                 }
             }
 
