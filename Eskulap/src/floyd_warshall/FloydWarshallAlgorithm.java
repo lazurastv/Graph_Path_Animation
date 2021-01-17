@@ -90,7 +90,8 @@ public class FloydWarshallAlgorithm {
 		if (start >= vertices.length || start < 0) {
 			return -1;
 		}
-
+		
+		visited[start] = true;
 		int end = 0;
 
 		if (start == 0) {
