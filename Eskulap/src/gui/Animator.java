@@ -22,7 +22,8 @@ public class Animator extends Thread {
     private int[] path;
     private int i = 0;
     private int percent = 50;
-    private static final int MIN_DELAY = 10;
+    private static final int MIN_DELAY = 1;
+    private static final int MAX_DELAY = 100;
 
     public Animator(Graph g, Rectangle2D[] h, Map m) {
         graph = g;
@@ -41,22 +42,23 @@ public class Animator extends Thread {
             fwa.reset();
             Patient tmp_p = new Patient(0, graph.unscale_x(patient.getWsp().x), graph.unscale_y(patient.getWsp().y));
             int close = tmp_p.findNearestHospital(map.getHospitals());
-            setupLine(close, 0);
+            makeLine(close);
         }
     }
 
-    private void print() {
-        if (map.getHospitals()[path[i]].getBedNumber() != 0) {
-            graph.getCenter().print(" -> Szpital " + map.getHospitals()[path[i]].getId());
-        } else {
-            graph.getCenter().print(" -> Skrzyżowanie ");
-        }
+    private void makeLine(int where) {
+        i = 0;
+        path = new int[]{where};
+        setup();
     }
 
-    private void setupLine(int from, int skip) {
-        i = skip;
-        int to = fwa.getClosestVertex(from);
-        path = fwa.getPath(from, to);
+    private void makePath(int from) {
+        i = 1;
+        path = fwa.getPath(from, fwa.getClosestVertex(from));
+        setup();
+    }
+
+    private void setup() {
         graph.getCenter().print("Pacjent " + patient.getId());
         print();
         start = (Point) patient.getWsp().clone();
@@ -64,6 +66,14 @@ public class Animator extends Thread {
         p_y = patient.getWsp().y;
         getTarget();
         getLine();
+    }
+
+    private void print() {
+        if (map.getHospitals()[path[i]].getBedNumber() != 0) {
+            graph.getCenter().print(" -> Szpital " + map.getHospitals()[path[i]].getId());
+        } else {
+            graph.getCenter().print(" -> Skrzyżowanie " + path[i]);
+        }
     }
 
     public void setPercent(int per) {
@@ -126,7 +136,7 @@ public class Animator extends Thread {
             if (patient != null && percent > 0) {
                 graph.repaint();
                 long time = System.currentTimeMillis();
-                while (System.currentTimeMillis() - time < MIN_DELAY * 100 / percent) {
+                while (System.currentTimeMillis() - time < MAX_DELAY * (100 - percent) / 100 + MIN_DELAY) {
                 }
                 p_x += dx;
                 p_y += dy;
@@ -136,7 +146,7 @@ public class Animator extends Thread {
                     p_x = patient.getWsp().x;
                     p_y = patient.getWsp().y;
                     graph.repaint();
-                    if (i == 0 || i + 1 == path.length) {
+                    if (i + 1 == path.length) {
                         int ret = map.getHospitals()[path[i]].addPatient(fwa.getVisited());
                         switch (ret) {
                             case 0:
@@ -145,10 +155,7 @@ public class Animator extends Thread {
                                 break;
                             case -1:
                                 graph.getCenter().print(" -> Brak miejsc.\n");
-                                setupLine(path[i], 1);
-                                for (boolean b : fwa.getVisited()) {
-                                    System.out.print(b + " ");
-                                }
+                                makePath(path[i]);
                                 break;
                             case -2:
                                 graph.getCenter().print(" -> Dodano do kolejki.\n");
@@ -156,10 +163,7 @@ public class Animator extends Thread {
                         }
                     } else {
                         i++;
-                        print();
-                        start = (Point) patient.getWsp().clone();
-                        getTarget();
-                        getLine();
+                        setup();
                     }
                 }
             }

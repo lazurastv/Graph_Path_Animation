@@ -325,11 +325,13 @@ public class Graph extends JPanel {
                 g.fillRect((int)label.getX(), (int)label.getY() - 30, 250, 30);
                 Hospital hos = map.getHospitals()[hovered_id];
                 g.setColor(Color.BLACK);
-                int queue = -hos.getFreeBedCount();
-                if (queue < 0) {
-                    queue = 0;
+                int free = hos.getFreeBedCount();
+                int queue = 0;
+                if (free < 0) {
+                    queue = -free;
+                    free = 0;
                 }
-                g.drawString(queue + "/" + hos.getFreeBedCount() + "/" + hos.getBedNumber(), (int)label.getX(), (int)label.getY() - 18);
+                g.drawString(queue + "/" + free + "/" + hos.getBedNumber(), (int)label.getX(), (int)label.getY() - 18);
                 g.drawString("Kolejka/Wolne łóżka/Wszystkie łóżka", (int)label.getX(), (int)label.getY() - 4);
             }
         } else {
