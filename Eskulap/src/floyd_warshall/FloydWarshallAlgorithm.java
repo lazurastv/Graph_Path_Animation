@@ -101,11 +101,11 @@ public class FloydWarshallAlgorithm {
 			end = 1;
 		}
 
-		double endDist = -1;
+		double endDist = MAX;
 
 		for (int i = end; i < vertices.length; i++) {
 			double temp = distMatrix[start][i];
-			if (visited[i] == false && (temp < endDist || endDist == -1)) {
+			if (visited[i] == false && temp < endDist) {
 				endDist = temp;
 				end = i;
 			}
