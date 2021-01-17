@@ -21,9 +21,9 @@ public class FileManager {
         ArrayList<Patient> tmp = new ArrayList<>();
         FileReader fr = new FileReader(fname);
         BufferedReader br = new BufferedReader(fr);
-
         String line;
         nline = 1;
+        try{
         while ((line = br.readLine()) != null) {
             if (line.toCharArray().length == 0) {
                 nline++;
@@ -47,6 +47,9 @@ public class FileManager {
             }
 
         }
+        }finally{
+            br.close();
+        }
         return tmp.toArray(new Patient[0]);
     }
 
@@ -57,7 +60,8 @@ public class FileManager {
         BufferedReader br = new BufferedReader(fr);
         String line;
         boolean next = false;
-
+        
+        try{
         nline = 1;
         while ((line = br.readLine()) != null) {
             if (line.toCharArray().length == 0) {
@@ -121,6 +125,9 @@ public class FileManager {
         }
         map.setRoads(readRoads(br));
         points.clear();
+        }finally{
+            br.close();
+        }
         return map;
     }
 
