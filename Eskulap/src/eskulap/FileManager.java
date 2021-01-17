@@ -12,23 +12,19 @@ import java.util.ArrayList;
 
 public class FileManager {
 
-    public Patient[] readPatients(String fname) throws IOException {
+    public Patient[] readPatients(String fname) throws IOException,NumberFormatException {
         ArrayList<Patient> tmp = new ArrayList<>();
         FileReader fr = new FileReader(fname);
         BufferedReader br = new BufferedReader(fr);
         String line;
-
         while ((line = br.readLine()) != null) {
             if (line.toCharArray()[0] == '#') {
                 continue;
             }
             String[] w = line.split("\\s+[|]");
             if (w.length == 3) {
-                try {
                     Patient p = new Patient(Integer.parseInt(w[0]), Integer.parseInt(w[1].trim()), Integer.parseInt(w[2].trim()));
                     tmp.add(p);
-                } catch (NumberFormatException e) {
-                }
             }
         }
 
@@ -51,7 +47,7 @@ public class FileManager {
                     next = true;
                 }
             }
-            String[] w = line.split("\\s+[|]");
+            String[] w = line.split("\\s+[|] ");
             if (w.length == 6) {
                 try {
                     Hospital h = new Hospital(Integer.parseInt(w[0]), w[1], Integer.parseInt(w[2].trim()),
@@ -77,7 +73,7 @@ public class FileManager {
             if (line.toCharArray()[0] == '#') {
                 break;
             }
-            String[] w = line.split("\\s+[|]");
+            String[] w = line.split("\\s+[|] ");
             if (w.length == 4) {
                 try {
                     Construction c = new Construction(Integer.parseInt(w[0]), w[1], Integer.parseInt(w[2].trim()),

@@ -10,18 +10,18 @@ public class RayCasting {
 
     private static boolean isIntersecting(Point2D A, Point2D B, Point2D p) throws PointOnEdgeException {
         if (A.getY() > B.getY()) {
-            Point2D tmp = new Point2D.Double(A.getX(), A.getY());
-            A.setLocation(B);
-            B.setLocation(tmp);
+            return isIntersecting(B, A, p);
         }
         double minX = Math.min(A.getX(), B.getX());
         double maxX = Math.max(A.getX(), B.getX());
+        
         if (p.getY() > B.getY() || p.getY() < A.getY() || p.getX() > maxX) {
             return false;
         }
         if (p.getX() < minX) {
             return true;
         }
+        
         double aEdge;
         if ((B.getX() - A.getX()) != 0) {
             aEdge = (B.getY() - A.getY()) / (B.getX() - A.getX());
@@ -30,6 +30,7 @@ public class RayCasting {
         } else {
             return p.getX() < minX;
         }
+        
         double aPoint;
         if (p.getX() == A.getX()) {
             if (A.getY() == p.getY()) {
@@ -40,6 +41,7 @@ public class RayCasting {
         } else {
             aPoint = (p.getY() - A.getY()) / (p.getX() - A.getX());
         }
+        
         if (aPoint == aEdge) {
             throw new PointOnEdgeException();
         }
@@ -49,9 +51,6 @@ public class RayCasting {
     public boolean isInside(Point polygon[], int n, Point point) {
         Point2D p = (Point2D) point;
         boolean inside = false;
-        if (n < 3) {
-            return inside;
-        }
         int i = 0;
         int next = -1;
         while (next != 0) {
@@ -63,7 +62,7 @@ public class RayCasting {
                     if (isIntersecting(vertex1, vertex2, new Point2D.Double(p.getX(), p.getY() + 0.001))) {
                         inside = !inside;
                         if (!isIntersecting(vertex1, vertex2, new Point2D.Double(p.getX(), p.getY() - 0.001))) {
-                            return false;
+                            throw new PointOnEdgeException();
                         }
                     } else {
                         i = next;

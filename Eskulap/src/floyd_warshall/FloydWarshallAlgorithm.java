@@ -87,6 +87,10 @@ public class FloydWarshallAlgorithm {
 	}
 
 	public int getClosestVertex(int start) {
+		if (start >= vertices.length || start < 0) {
+			return -1;
+		}
+
 		int end = 0;
 
 		if (start == 0) {
@@ -104,7 +108,7 @@ public class FloydWarshallAlgorithm {
 		}
 
 		if (endDist == MAX || visited[end] == true) {
-			return -1;
+			return -2;
 		}
 
 		visited[end] = true;
