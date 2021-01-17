@@ -11,11 +11,11 @@ public class Patient {
 		this.id = id;
 		wsp = new Point(wspx, wspy);
 	}
-
-	public Patient(int id, Point p) {
-		this.id = id;
-		wsp = p;
-	}
+        
+        @Override
+        public Patient clone() {
+            return new Patient(id, wsp.x, wsp.y);
+        }
 
 	public void move(int x, int y) {
 		wsp.x = x;

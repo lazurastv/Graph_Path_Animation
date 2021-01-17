@@ -5,20 +5,21 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 public class SpeedSlider extends JSlider implements ChangeListener {
-    
-    private int speed;
-    
-    public SpeedSlider() {
-        speed = 5;
+
+    private final WestPane west_pane;
+
+    public SpeedSlider(WestPane pane) {
+        west_pane = pane;
         init();
     }
-    
+
     private void init() {
         setToolTipText("Zmień prędkość animacji.");
         setMinimum(0);
-        setMaximum(10);
-        setValue(5);
-        setMajorTickSpacing(1);
+        setMaximum(100);
+        setValue(50);
+        setMajorTickSpacing(25);
+        setMinorTickSpacing(5);
         setPaintTicks(true);
         setSnapToTicks(true);
         setPaintLabels(true);
@@ -27,11 +28,11 @@ public class SpeedSlider extends JSlider implements ChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        speed = getValue();
+        if (west_pane.getBoard().getCenter().getGraph().patientLoaded()) {
+            west_pane.getBoard().getCenter().getGraph().setSpeed(getValue());
+        } else {
+            setValue(50);
+        }
     }
-    
-    public int getSpeed() {
-        return speed;
-    }
-    
+
 }

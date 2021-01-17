@@ -3,9 +3,6 @@ package gui;
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import storage.Patient;
 
 public class Board extends JFrame {
 
@@ -47,21 +44,8 @@ public class Board extends JFrame {
         return west_pane.mapLoaded();
     }
     
-    public void loadPatient(Patient p) {
-        center_pane.loadPatient(p);
-    }
-    
     public void loadMap() {
         center_pane.loadMap();
-    }
-
-    private class SliderChange implements ChangeListener {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            int speed = 0;//getValue();
-        }
-
     }
 
 }

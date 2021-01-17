@@ -1,6 +1,5 @@
 package gui;
 
-import floyd_warshall.FloydWarshallAlgorithm;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -8,7 +7,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
-import storage.Patient;
 
 public class CenterPane extends JPanel {
     
@@ -62,10 +60,6 @@ public class CenterPane extends JPanel {
     
     public void loadMap() {
         graph.loadMap();
-    }
-    
-    public void loadPatient(Patient p) {
-        graph.loadPatient(p);
     }
     
     public boolean mapLoaded() {

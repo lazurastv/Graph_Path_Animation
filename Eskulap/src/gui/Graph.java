@@ -2,7 +2,6 @@ package gui;
 
 import eskulap.JarvisMarch;
 import eskulap.RayCasting;
-import floyd_warshall.FloydWarshallAlgorithm;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -16,8 +15,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -30,13 +27,15 @@ import storage.Road;
 
 public class Graph extends JPanel {
 
+    private Map map;
     private Rectangle2D[] hospitals;
+    private Point label;
+    private int hovered_id;
     private Ellipse2D[] constructs;
     private Line2D[] roads;
     private Point[] border_points;
     private Polygon border;
     private Patient patient;
-    private int[] path;
     private double scaleX;
     private double scaleY;
     private int minimum_x;
@@ -44,8 +43,7 @@ public class Graph extends JPanel {
     private int maximum_x;
     private int maximum_y;
     private boolean draw_hospitals, draw_objects, draw_roads;
-    private Timer animation;
-    private FloydWarshallAlgorithm fwa;
+    private Animator animation;
     private final CenterPane center_pane;
     private static final int X_SIZE = 1000;
     private static final int Y_SIZE = 500;
@@ -63,23 +61,46 @@ public class Graph extends JPanel {
         draw_objects = true;
         draw_roads = true;
         addMouseListener(new MouseAdapter() {
+            int id = 1;
+
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (center_pane.getBoard().getWest().mapLoaded() && !patientLoaded() && e.isControlDown()) {
-                    loadPatient(new Patient(0, e.getPoint()));
+                if (map != null && e.isControlDown()) {
+                    addPatient(new Patient(id++, unscale_x(e.getPoint().x), unscale_y(e.getPoint().y)));
                 }
             }
+        });
+        addMouseMotionListener(new MouseAdapter() {
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (map != null) {
+                    for (int i = 0; i < hospitals.length; i++) {
+                        if (Math.abs(e.getX() - hospitals[i].getCenterX()) <= RADIUS
+                                && Math.abs(e.getY() - hospitals[i].getCenterY()) <= RADIUS
+                                && map.getHospitals()[i].getBedNumber() != 0) {
+                            hovered_id = i;
+                            label = e.getPoint();
+                            repaint();
+                            break;
+                        } else if (i == hospitals.length - 1) {
+                            hovered_id = -1;
+                        }
+                    }
+                }
+            }
+
         });
         setPreferredSize(new Dimension(X_SIZE, Y_SIZE));
         setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
     }
 
-    private void animate() {
-        if (animation != null) {
-            animation.cancel();
-        }
-        animation = new Timer();
-        animation.scheduleAtFixedRate(new animTask(), 0, 50);
+    public void setPatient(Patient p) {
+        patient = p;
+    }
+
+    public void setSpeed(int s) {
+        animation.setPercent(s);
     }
 
     public void toggleHospitals() {
@@ -97,146 +118,34 @@ public class Graph extends JPanel {
         repaint();
     }
 
-    public boolean patientExists() {
-        return patient != null;
+    public CenterPane getCenter() {
+        return center_pane;
     }
 
-    private class animTask extends TimerTask {
-
-        int i;
-        double p_x, p_y;
-        double dx, dy;
-        Point target;
-        Point start;
-
-        private animTask() {
-            i = 0;
-            start = patient.getWsp();
-            p_x = patient.getWsp().x;
-            p_y = patient.getWsp().y;
-            getTarget();
-            getLine();
-        }
-
-        private int getDx() {
-            int dX = target.x - start.x;
-            if (dX < 0) {
-                dX = -1;
-            } else {
-                dX = 1;
-            }
-            return dX;
-        }
-
-        private int getDy() {
-            int dY = target.y - start.y;
-            if (dY < 0) {
-                dY = -1;
-            } else {
-                dY = 1;
-            }
-            return dY;
-        }
-
-        private void getTarget() {
-            target = new Point((int) hospitals[path[i]].getCenterX(), (int) hospitals[path[i]].getCenterY());
-        }
-
-        private boolean crossedX() {
-            return (target.x - start.x) * (target.x - patient.getWsp().x) <= 0;
-        }
-
-        private boolean crossedY() {
-            return (target.y - start.y) * (target.y - patient.getWsp().y) <= 0;
-        }
-
-        private double direction() {
-            return 1.0 * (target.y - patient.getWsp().y) / (target.x - patient.getWsp().x);
-        }
-
-        private void getLine() {
-            dx = getDx();
-            dy = direction();
-            if (Double.isInfinite(dy)) {
-                dx = 0;
-                dy = getDy();
-            } else if (dy > -1 && dy != 0 && dy < 1) {
-                dx /= Math.abs(dy);
-                dy = getDy();
-            }
-        }
-
-        @Override
-        public void run() {
-            repaint();
-            p_x += dx;
-            p_y += dy;
-            patient.move((int) p_x, (int) p_y);
-            if (crossedX() && crossedY()) {
-                patient.move(target.x, target.y);
-                p_x = patient.getWsp().x;
-                p_y = patient.getWsp().y;
-                repaint();
-                if (++i < path.length) {
-                    start = patient.getWsp();
-                    getTarget();
-                    getLine();
-                } else {
-                    patient = null;
-                    cancel();
-                }
-            }
-        }
-
+    public Patient getPatient() {
+        return patient;
     }
 
-    public int[] getPath() {
-        return path;
-    }
-
-    public void loadPatient(Patient p) {
+    public void addPatient(Patient p) {
         patient = p;
-        if (center_pane.getBoard().getWest().mapLoaded()) {
+        if (map != null) {
             if (new RayCasting().isInside(border_points, border_points.length, patient.getWsp())) {
-                routePatient();
+                patient.move(scale_x(p.getWsp().x), scale_y(p.getWsp().y));
+                animation.addPatient(patient);
             } else {
-                JOptionPane.showMessageDialog(new JFrame(), "Pacjent jest poza granicami państwa.");
+                center_pane.print("Pacjent " + p.getId() + " jest poza granicami państwa.\n");
             }
         } else {
             JOptionPane.showMessageDialog(new JFrame(), "Najpierw wczytaj państwo!");
         }
     }
 
-    public void scalePatient(Patient p) {
-        patient = p;
-        for (Point pt : border_points) {
-            System.out.println(pt);
-        }
-        System.out.println(p.getWsp());
-        if (new RayCasting().isInside(border_points, border_points.length, patient.getWsp())) {
-            patient.move(scale_x(p.getWsp().x), scale_y(p.getWsp().y));
-            routePatient();
-        } else {
-            JOptionPane.showMessageDialog(new JFrame(), "Pacjent jest poza granicami państwa.");
-        }
-    }
-
-    private void routePatient() {
-        int closest = patient.findNearestHospital(center_pane.getBoard().getWest().getMap().getHospitals());
-        fwa.reset();
-        path = fwa.getPath(closest, fwa.getClosestVertex(closest));
-        animate();
-        for (int i = 0; i < path.length; i++) {
-            center_pane.print("" + path[i]);
-            if (i < path.length - 1) {
-                center_pane.print(" -> ");
-            }
-        }
-        center_pane.print("\n");
+    public Map getMap() {
+        return map;
     }
 
     public void loadMap() {
-        Map map = center_pane.getBoard().getWest().getMap();
+        map = center_pane.getBoard().getWest().getMap();
         Hospital[] hos = map.getHospitals();
         Construction[] con = map.getConstructs();
         Road[] ros = map.getRoads();
@@ -244,10 +153,14 @@ public class Graph extends JPanel {
         findScale(hos, con);
         hospitals = new Rectangle2D[hos.length];
         for (int i = 0; i < hospitals.length; i++) {
-            points.add(hos[i].getWsp());
             int x = scale_x(hos[i].getWsp().x);
             int y = scale_y(hos[i].getWsp().y);
-            hospitals[i] = new Rectangle2D.Double(x - RADIUS, y - RADIUS, 2 * RADIUS, 2 * RADIUS);
+            if (hos[i].getBedNumber() != 0) {
+                hospitals[i] = new Rectangle2D.Double(x - RADIUS, y - RADIUS, 2 * RADIUS, 2 * RADIUS);
+                points.add(hos[i].getWsp());
+            } else {
+                hospitals[i] = new Rectangle2D.Double(x, y, 0, 0);
+            }
         }
         constructs = new Ellipse2D[con.length];
         for (int i = 0; i < constructs.length; i++) {
@@ -275,9 +188,11 @@ public class Graph extends JPanel {
             int y_1 = scale_y(hos[ros[i].getIdSecond() - 1].getWsp().y);
             roads[i] = new Line2D.Double(x_0, y_0, x_1, y_1);
         }
-        map.addCrossings();
-        fwa = new FloydWarshallAlgorithm(map);
-        fwa.applyAlgorithm();
+        if (animation != null) {
+            animation.interrupt();
+        }
+        animation = new Animator(this, hospitals, map);
+        animation.start();
         repaint();
     }
 
@@ -285,8 +200,16 @@ public class Graph extends JPanel {
         return (int) (scaleX * (x - minimum_x)) + SPACE + RADIUS;
     }
 
+    public int unscale_x(int x) {
+        return (int) ((x - RADIUS - SPACE) / scaleX) + minimum_x;
+    }
+
     private int scale_y(int y) {
         return (int) (scaleY * (y - minimum_y)) + SPACE + RADIUS;
+    }
+
+    public int unscale_y(int y) {
+        return (int) ((y - RADIUS - SPACE) / scaleY) + minimum_y;
     }
 
     private void findScale(Hospital[] hos, Construction[] con) {
@@ -331,32 +254,32 @@ public class Graph extends JPanel {
     }
 
     private void drawAxis(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.drawString("" + minimum_x, 2 * SPACE, Y_SIZE - SPACE);
-        g.drawString("" + maximum_x, X_SIZE - SPACE, Y_SIZE - SPACE);
-        g.drawString("" + minimum_y, SPACE, SPACE);
-        g.drawString("" + maximum_y, SPACE, Y_SIZE - 2 * SPACE);
+        g.setColor(Color.RED);
+        g.drawString("" + minimum_x, SPACE, Y_SIZE - SPACE / 2);
+        g.drawString("" + maximum_x, X_SIZE - SPACE / 2, Y_SIZE - SPACE / 2);
+        g.drawString("" + minimum_y, SPACE / 2, SPACE / 2);
+        g.drawString("" + maximum_y, SPACE / 2, Y_SIZE - SPACE);
     }
 
     private void drawHospitals(Graphics2D g) {
-        int index = 1;
-        for (Rectangle2D r : hospitals) {
+        for (int i = 0; i < map.getHospitals().length; i++) {
+            Rectangle2D r = hospitals[i];
             g.setColor(Color.RED);
             g.fill(r);
             g.setColor(Color.BLACK);
-            g.drawString("" + index, (int) r.getCenterX() - 2, (int) r.getCenterY() + 5);
-            index++;
+            if (map.getHospitals()[i].getBedNumber() != 0) {
+                g.drawString("" + map.getHospitals()[i].getId(), (int) r.getCenterX() - 2, (int) r.getCenterY() + 5);
+            }
         }
     }
 
     private void drawObjects(Graphics2D g) {
-        int index = 1;
-        for (Ellipse2D e : constructs) {
+        for (int i = 0; i < map.getConstructs().length; i++) {
+            Ellipse2D e = constructs[i];
             g.setColor(Color.RED);
             g.fill(e);
             g.setColor(Color.BLACK);
-            g.drawString("" + index, (int) e.getCenterX() - 2, (int) e.getCenterY() + 5);
-            index++;
+            g.drawString("" + map.getConstructs()[i].getId(), (int) e.getCenterX() - 2, (int) e.getCenterY() + 5);
         }
     }
 
@@ -379,11 +302,11 @@ public class Graph extends JPanel {
         g.setFont(font);
 
         if (hospitals != null) {
-            drawAxis(g);
             g.setColor(Color.LIGHT_GRAY);
             g.fillRect(0, 0, X_SIZE, Y_SIZE);
             g.setColor(Color.WHITE);
             g.fillPolygon(border);
+            drawAxis(g);
             if (draw_hospitals) {
                 drawHospitals(g);
             }
@@ -396,6 +319,18 @@ public class Graph extends JPanel {
             if (patient != null) {
                 g.setColor(Color.GREEN);
                 g.fillOval(patient.getWsp().x - PATIENT_RADIUS, patient.getWsp().y - PATIENT_RADIUS, 2 * PATIENT_RADIUS, 2 * PATIENT_RADIUS);
+            }
+            if (hovered_id != -1) {
+                g.setColor(Color.WHITE);
+                g.fillRect((int)label.getX(), (int)label.getY() - 30, 250, 30);
+                Hospital hos = map.getHospitals()[hovered_id];
+                g.setColor(Color.BLACK);
+                int queue = -hos.getFreeBedCount();
+                if (queue < 0) {
+                    queue = 0;
+                }
+                g.drawString(queue + "/" + hos.getFreeBedCount() + "/" + hos.getBedNumber(), (int)label.getX(), (int)label.getY() - 18);
+                g.drawString("Kolejka/Wolne łóżka/Wszystkie łóżka", (int)label.getX(), (int)label.getY() - 4);
             }
         } else {
             g.setColor(Color.WHITE);

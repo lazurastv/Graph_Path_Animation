@@ -6,9 +6,10 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -32,9 +33,13 @@ public class WestPane extends JPanel {
 
     public WestPane(Board b) {
         board = b;
-        slider = new SpeedSlider();
+        slider = new SpeedSlider(this);
         coords = makeFields();
         init();
+    }
+
+    public Board getBoard() {
+        return board;
     }
 
     private void init() {
@@ -77,7 +82,7 @@ public class WestPane extends JPanel {
     public boolean mapLoaded() {
         return map != null;
     }
-    
+
     public Map getMap() {
         return map;
     }
@@ -92,6 +97,7 @@ public class WestPane extends JPanel {
                 String path = fc.getSelectedFile().getAbsolutePath();
                 try {
                     map = new FileManager().readHospitals(path);
+                    map.addCrossings();
                     board.loadMap();
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
@@ -110,13 +116,14 @@ public class WestPane extends JPanel {
                 int returnVal = fc.showOpenDialog(new JPanel());
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     String path = fc.getSelectedFile().getAbsolutePath();
+                    Patient[] patients;
                     try {
-                        Patient[] patients = new FileManager().readPatients(path);
+                        patients = new FileManager().readPatients(path);
                         for (Patient p : patients) {
-                            board.loadPatient(p);
+                            board.getCenter().getGraph().addPatient(p);
                         }
                     } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
+                        Logger.getLogger(WestPane.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             } else {
@@ -128,7 +135,7 @@ public class WestPane extends JPanel {
 
     private JButton[] makeSelectors() {
         JButton[] file = new JButton[2];
-        String[] names = {"Szpitale", "Pacjenci"};
+        String[] names = {"Wczytaj szpitale", "Wczytaj pacjentów"};
         for (int i = 0; i < file.length; i++) {
             file[i] = new JButton(names[i]);
             file[i].setPreferredSize(new Dimension(100, 50));
@@ -158,7 +165,7 @@ public class WestPane extends JPanel {
         JButton button = new JButton("OK");
         button.setHorizontalAlignment(CENTER);
         button.addActionListener(new AbstractAction() {
-            
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (coords[0].getText().isBlank() || coords[1].getText().isBlank()) {
@@ -166,12 +173,12 @@ public class WestPane extends JPanel {
                 } else try {
                     int x = Integer.parseInt(coords[0].getText());
                     int y = Integer.parseInt(coords[1].getText());
-                    board.getCenter().getGraph().scalePatient(new Patient(0, new Point(x, y)));
+                    board.getCenter().getGraph().addPatient(new Patient(0, x, y));
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(new JFrame(), "Współrzędne muszą być liczbami całkowitymi!");
                 }
             }
-            
+
         });
         return button;
     }
