@@ -90,19 +90,22 @@ public class FloydWarshallAlgorithm {
 		if (start >= vertices.length || start < 0) {
 			return -1;
 		}
+
+		if (visited[start] == false) {
+			visited[start] = true;
+		}
 		
-		visited[start] = true;
 		int end = 0;
 
 		if (start == 0) {
 			end = 1;
 		}
 
-		double endDist = distMatrix[start][end];
+		double endDist = -1;
 
-		for (int i = end + 1; i < vertices.length; i++) {
+		for (int i = end; i < vertices.length; i++) {
 			double temp = distMatrix[start][i];
-			if (temp < endDist && visited[i] == false && temp != 0.0) {
+			if (visited[i] == false && (temp < endDist || endDist == -1)) {
 				endDist = temp;
 				end = i;
 			}
