@@ -1,4 +1,4 @@
-package txt;
+package floyd_warshall;
 
 import static org.junit.Assert.*;
 import org.junit.AfterClass;
@@ -6,7 +6,6 @@ import org.junit.BeforeClass;
 import org.junit.Before;
 import org.junit.Test;
 
-import floyd_warshall.FloydWarshallAlgorithm;
 import storage.Hospital;
 import storage.Road;
 import storage.Map;
