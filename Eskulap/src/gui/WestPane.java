@@ -8,8 +8,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -98,7 +96,7 @@ public class WestPane extends JPanel {
                 try {
                     map = new FileManager().readHospitals(path);
                     map.addCrossings();
-                    board.loadMap();
+                    board.loadMap(map);
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
                 } catch(FileReadingException ex){
@@ -124,10 +122,7 @@ public class WestPane extends JPanel {
                         for (Patient p : patients) {
                             board.getCenter().getGraph().addPatient(p);
                         }
-                    } catch (IOException ex) {
-                        Logger.getLogger(WestPane.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch(FileReadingException ex){
-                        JOptionPane.showMessageDialog(new JFrame(), ex.getMessage());
+                    } catch (IOException | FileReadingException ex) {
                     }
                 }
             } else {
@@ -170,6 +165,7 @@ public class WestPane extends JPanel {
         JButton button = new JButton("OK");
         button.setHorizontalAlignment(CENTER);
         button.addActionListener(new AbstractAction() {
+            int id = 1;
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -178,7 +174,7 @@ public class WestPane extends JPanel {
                 } else try {
                     int x = Integer.parseInt(coords[0].getText());
                     int y = Integer.parseInt(coords[1].getText());
-                    board.getCenter().getGraph().addPatient(new Patient(0, x, y));
+                    board.getCenter().getGraph().addPatient(new Patient(id++, x, y));
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(new JFrame(), "Współrzędne muszą być liczbami całkowitymi!");
                 }

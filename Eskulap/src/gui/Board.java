@@ -3,6 +3,7 @@ package gui;
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import storage.Map;
 
 public class Board extends JFrame {
 
@@ -44,8 +45,8 @@ public class Board extends JFrame {
         return west_pane.mapLoaded();
     }
     
-    public void loadMap() {
-        center_pane.loadMap();
+    public void loadMap(Map m) {
+        center_pane.loadMap(m);
     }
 
 }
