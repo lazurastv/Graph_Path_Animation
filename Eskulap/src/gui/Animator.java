@@ -45,10 +45,20 @@ public class Animator extends Thread {
         }
     }
 
+    private void print() {
+        if (map.getHospitals()[path[i]].getBedNumber() != 0) {
+            graph.getCenter().print(" -> Szpital " + map.getHospitals()[path[i]].getId());
+        } else {
+            graph.getCenter().print(" -> Skrzyżowanie ");
+        }
+    }
+
     private void setupLine(int from, int skip) {
         i = skip;
-        path = fwa.getPath(from, fwa.getClosestVertex(from));
-        graph.getCenter().print("Pacjent " + patient.getId() + " -> Szpital " + map.getHospitals()[path[i]].getId());
+        int to = fwa.getClosestVertex(from);
+        path = fwa.getPath(from, to);
+        graph.getCenter().print("Pacjent " + patient.getId());
+        print();
         start = (Point) patient.getWsp().clone();
         p_x = patient.getWsp().x;
         p_y = patient.getWsp().y;
@@ -67,8 +77,6 @@ public class Animator extends Thread {
     private void getTarget() {
         if (i < path.length) {
             end = new Point((int) hospitals[path[i]].getCenterX(), (int) hospitals[path[i]].getCenterY());
-        } else {
-            end = new Point(0, 0);
         }
     }
 
@@ -138,13 +146,17 @@ public class Animator extends Thread {
                             case -1:
                                 graph.getCenter().print(" -> Brak miejsc.\n");
                                 setupLine(path[i], 1);
+                                for (boolean b : fwa.getVisited()) {
+                                    System.out.print(b + " ");
+                                }
                                 break;
                             case -2:
                                 graph.getCenter().print(" -> Dodano do kolejki.\n");
                                 patient = null;
                         }
                     } else {
-                        graph.getCenter().print(" -> Szpital " + map.getHospitals()[path[++i]].getId());
+                        i++;
+                        print();
                         start = (Point) patient.getWsp().clone();
                         getTarget();
                         getLine();

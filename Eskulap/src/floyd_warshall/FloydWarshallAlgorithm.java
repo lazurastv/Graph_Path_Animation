@@ -87,16 +87,24 @@ public class FloydWarshallAlgorithm {
 	}
 
 	public int getClosestVertex(int start) {
+            System.out.println(start);
 		if (start >= vertices.length || start < 0) {
 			return -1;
 		}
 		
 		visited[start] = true;
-		int end = 0;
-
-		if (start == 0) {
-			end = 1;
-		}
+		int end = -1;
+                
+                for (int i = 0; i < vertices.length; i++) {
+                    if (start != i && vertices[i].getVisited() == false) {
+                        end = i;
+                        break;
+                    }
+                }
+                
+                if (end == -1) {
+                    return -2;
+                }
 
 		double endDist = distMatrix[start][end];
 
@@ -112,7 +120,7 @@ public class FloydWarshallAlgorithm {
 			return -2;
 		}
 
-		visited[end] = true;
+		//visited[end] = true;
 
 		return end;
 	}
