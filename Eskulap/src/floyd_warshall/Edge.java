@@ -1,6 +1,5 @@
 package floyd_warshall;
 
-import storage.Hospital;
 import storage.Road;
 
 public class Edge {
