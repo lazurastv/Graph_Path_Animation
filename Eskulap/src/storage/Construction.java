@@ -1,6 +1,7 @@
 package storage;
 
 import java.awt.Point;
+import java.util.Objects;
 
 public class Construction {
 
@@ -18,11 +19,30 @@ public class Construction {
     public String toString() {
         return id + " | " + name + " | " + wsp.x + " | " + wsp.y;
     }
-    
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Construction) {
+            Construction c = (Construction) o;
+            return this.id == c.id && this.name.equals(c.name) && this.wsp.equals(c.wsp);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 67 * hash + this.id;
+        hash = 67 * hash + Objects.hashCode(this.name);
+        hash = 67 * hash + Objects.hashCode(this.wsp);
+        return hash;
+    }
+
     public int getId() {
         return id;
     }
-    
+
     public Point getWsp() {
         return wsp;
     }

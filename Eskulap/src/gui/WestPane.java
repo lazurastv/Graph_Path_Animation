@@ -1,6 +1,6 @@
 package gui;
 
-import eskulap.FileManager;
+import file_managment.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -89,7 +89,7 @@ public class WestPane extends JPanel {
 
     private class HospitalAction extends AbstractAction {
 
-        @Override
+       @Override
         public void actionPerformed(ActionEvent e) {
             JFileChooser fc = new JFileChooser();
             int returnVal = fc.showOpenDialog(new JPanel());
@@ -101,6 +101,8 @@ public class WestPane extends JPanel {
                     board.loadMap();
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
+                } catch(FileReadingException ex){
+                    JOptionPane.showMessageDialog(new JFrame(), ex.getMessage());
                 }
             }
         }
@@ -124,6 +126,8 @@ public class WestPane extends JPanel {
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(WestPane.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch(FileReadingException ex){
+                        JOptionPane.showMessageDialog(new JFrame(), ex.getMessage());
                     }
                 }
             } else {
@@ -133,6 +137,7 @@ public class WestPane extends JPanel {
 
     }
 
+    
     private JButton[] makeSelectors() {
         JButton[] file = new JButton[2];
         String[] names = {"Wczytaj szpitale", "Wczytaj pacjentów"};

@@ -1,6 +1,7 @@
 package storage;
 
 import eskulap.Crosser;
+import java.util.Arrays;
 
 public class Map {
     private Hospital[] hospitals;
@@ -53,6 +54,26 @@ public class Map {
             sb.append(r).append('\n');
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Map) {
+            Map m = (Map) o;
+            return Arrays.equals(this.constructs, m.constructs) && Arrays.equals(this.hospitals, m.hospitals)
+                    && Arrays.equals(this.roads, m.roads);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 59 * hash + Arrays.deepHashCode(this.hospitals);
+        hash = 59 * hash + Arrays.deepHashCode(this.constructs);
+        hash = 59 * hash + Arrays.deepHashCode(this.roads);
+        return hash;
     }
     
 }

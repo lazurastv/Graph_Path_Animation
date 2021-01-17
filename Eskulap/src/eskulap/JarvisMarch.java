@@ -7,17 +7,10 @@ public class JarvisMarch {
 
     private boolean isClockwise(Point a, Point b, Point c) {
         int crossProductAngleSign = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
-        if (crossProductAngleSign < 0) {
-            return true;
-        }
-        return false;
+        return crossProductAngleSign < 0;
     }
 
     public ArrayList<Point> calculateBorder(Point points[], int n) {
-        if (n < 3) {
-            System.out.println("Zbyt mala ilosc obiektow, aby stworzyc kraj");
-            return null;
-        }
         int minxId = 0;
         for (int i = 1; i < n; i++) {
             if (points[i].x < points[minxId].x) {

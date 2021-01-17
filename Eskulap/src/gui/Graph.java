@@ -129,7 +129,7 @@ public class Graph extends JPanel {
     public void addPatient(Patient p) {
         patient = p;
         if (map != null) {
-            if (new RayCasting().isInside(border_points, border_points.length, patient.getWsp())) {
+            if (new RayCasting(border_points).isInside(patient.getWsp())) {
                 patient.move(scale_x(p.getWsp().x), scale_y(p.getWsp().y));
                 animation.addPatient(patient);
             } else {
