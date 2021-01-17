@@ -117,4 +117,34 @@ public class RayCastingTest {
 
         assertFalse(isInside);
     }
+
+     @Test
+    public void pointOutsidePolygonOnSameHeightMostUpVertex() {
+        Point polygon[] = {new Point(-10, 1),
+            new Point(0, 10),
+            new Point(10, 0),
+            new Point(0, -10)};
+        rayCasting = new RayCasting(polygon);
+
+        Point p = new Point(-1000, 10);
+
+        boolean isInside = rayCasting.isInside(p);
+
+        assertFalse(isInside);
+    }
+    
+       @Test
+    public void pointOutsidePolygonOnSameHeightMostDownVertex() {
+        Point polygon[] = {new Point(-10, 1),
+            new Point(0, 10),
+            new Point(10, 0),
+            new Point(0, -10)};
+        rayCasting = new RayCasting(polygon);
+
+        Point p = new Point(-1000, -10);
+
+        boolean isInside = rayCasting.isInside(p);
+
+        assertFalse(isInside);
+    }
 }
