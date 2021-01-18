@@ -18,23 +18,25 @@ public class RayCasting {
         int count = 0;
         int i = 0;
         int next = -1;
-        boolean onVertexHeight;
+        boolean onVertexHeight = false;
         while (next != 0) {
             next = (i + 1) % n;
-            onVertexHeight = (polygon[i].y == p.y || polygon[next].y == p.y);
+            if (polygon[i].y == p.y || polygon[next].y == p.y) {
+                onVertexHeight = true;
+            }
             if (isIntersecting(polygon[i], polygon[next], p)) {
                 count++;
             }
             if (onEdge) {
                 return false;
             }
-            if (onVertexHeight && count == 2) {
-                int c = vertexHeightIntersections(new Point(-1_000_000, p.y));
-                return c != 2;
-            }
             i = next;
         }
-        return count % 2 == 1;
+        if (onVertexHeight && count == 2) {
+            int c = vertexHeightIntersections(new Point(-1_000_000, p.y));
+            return c!=2;
+        } 
+        return count == 1;
     }
 
     private int vertexHeightIntersections(Point p) {
@@ -63,7 +65,7 @@ public class RayCasting {
         if (p.x < minX) {
             return true;
         }
-        
+
         double aEdge;
         if ((B.x - A.x) != 0) {
             aEdge = (B.y - A.y) / (B.x - A.x);
@@ -73,7 +75,7 @@ public class RayCasting {
         } else {
             return p.x < minX;
         }
-        
+
         double aPoint;
         if (p.x == A.x) {
             if (A.y == p.y) {
