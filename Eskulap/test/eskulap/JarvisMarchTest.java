@@ -54,7 +54,7 @@ public class JarvisMarchTest {
             new Point(0, 10)};
 
         Point[] polygon = jMarch.calculateBorder(points, points.length).toArray(new Point[0]);
-
+        
         assertArrayEquals(polygon, polygonExpected);
     }
 
@@ -71,6 +71,29 @@ public class JarvisMarchTest {
         
         Point[] polygon = jMarch.calculateBorder(points, points.length).toArray(new Point[0]);
 
+        assertArrayEquals(polygon, polygonExpected);
+    }
+    
+    
+    @Test
+    public void threeColinearPoints() {
+        Point[] points = {new Point(0, 0), new Point(5, 0),
+            new Point(10, 0),
+            new Point(10, 10),
+            new Point(0, 10),
+            new Point(5, 5),
+            new Point(5, 6),
+            new Point(5, 7),
+            new Point(4, 2),
+            new Point(1, 6),
+            new Point(2, 8)};
+        Point[] polygonExpected = {new Point(0, 0),new Point(5, 0),
+            new Point(10, 0),
+            new Point(10, 10),
+            new Point(0, 10)};
+
+        Point[] polygon = jMarch.calculateBorder(points, points.length).toArray(new Point[0]);
+        
         assertArrayEquals(polygon, polygonExpected);
     }
 }
