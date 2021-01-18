@@ -89,6 +89,7 @@ public class WestPane extends JPanel {
                     map.addCrossings();
                     center_pane.loadMap(map);
                 } catch (IOException | FileReadingException ex) {
+                    JOptionPane.showMessageDialog(new JFrame(), ex.getMessage());
                 }
             }
         }
@@ -111,6 +112,7 @@ public class WestPane extends JPanel {
                             center_pane.addPatient(p);
                         }
                     } catch (IOException | FileReadingException ex) {
+                        JOptionPane.showMessageDialog(new JFrame(), ex.getMessage());
                     }
                 }
             } else {

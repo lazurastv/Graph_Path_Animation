@@ -24,6 +24,32 @@ public class CrosserTest {
         r_count = 12;
         prepareData();
     }
+    
+    @Test
+    public void testWhenAllAtopEachOther() {
+        x = new int[]{0, 10, 20, 30, 40};
+        y = new int[]{0, 10, 20, 30, 40};
+        id_1 = new int[]{0, 0, 0, 0, 1, 1, 1, 2, 2, 3};
+        id_2 = new int[]{1, 2, 3, 4, 2, 3, 4, 3, 4, 4};
+        sol_x = new int[]{};
+        sol_y = new int[]{};
+        h_count = 5;
+        r_count = 10;
+        prepareData();
+    }
+    
+    @Test
+    public void testNoCrossings() {
+        x = new int[]{0, 40, 0, 40, 40};
+        y = new int[]{0, 0, 40, 40, 30};
+        id_1 = new int[]{0, 0, 0, 1, 2, 3};
+        id_2 = new int[]{3, 2, 4, 4, 3, 4};
+        sol_x = new int[]{20, 22, 32};
+        sol_y = new int[]{20, 17, 32};
+        h_count = 5;
+        r_count = 6;
+        prepareData();
+    }
 
     private void prepareData() {
         Hospital[] hospitals = new Hospital[x.length];
@@ -50,6 +76,7 @@ public class CrosserTest {
         for (Road r : roads) {
             System.out.println(r);
         }
+        System.out.println();
     }
 
 }
