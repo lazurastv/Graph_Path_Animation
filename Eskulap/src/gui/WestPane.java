@@ -24,20 +24,15 @@ import storage.Patient;
 
 public class WestPane extends JPanel {
 
-    private Map map;
-    private final Board board;
+    private final CenterPane center_pane;
     private final SpeedSlider slider;
     private final JTextField[] coords;
 
-    public WestPane(Board b) {
-        board = b;
+    public WestPane(CenterPane center) {
+        center_pane = center;
         slider = new SpeedSlider(this);
         coords = makeFields();
         init();
-    }
-
-    public Board getBoard() {
-        return board;
     }
 
     private void init() {
@@ -76,13 +71,9 @@ public class WestPane extends JPanel {
             gbc.gridy++;
         }
     }
-
-    public boolean mapLoaded() {
-        return map != null;
-    }
-
-    public Map getMap() {
-        return map;
+    
+    public void setSpeed(int s) {
+        center_pane.setSpeed(s);
     }
 
     private class HospitalAction extends AbstractAction {
@@ -94,13 +85,10 @@ public class WestPane extends JPanel {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 String path = fc.getSelectedFile().getAbsolutePath();
                 try {
-                    map = new FileManager().readHospitals(path);
+                    Map map = new FileManager().readHospitals(path);
                     map.addCrossings();
-                    board.loadMap(map);
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(new JFrame(), "Nie udało się przeczytać pliku!");
-                } catch(FileReadingException ex){
-                    JOptionPane.showMessageDialog(new JFrame(), ex.getMessage());
+                    center_pane.loadMap(map);
+                } catch (IOException | FileReadingException ex) {
                 }
             }
         }
@@ -111,7 +99,7 @@ public class WestPane extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (mapLoaded()) {
+            if (center_pane.mapLoaded()) {
                 JFileChooser fc = new JFileChooser();
                 int returnVal = fc.showOpenDialog(new JPanel());
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -120,7 +108,7 @@ public class WestPane extends JPanel {
                     try {
                         patients = new FileManager().readPatients(path);
                         for (Patient p : patients) {
-                            board.getCenter().getGraph().addPatient(p);
+                            center_pane.addPatient(p);
                         }
                     } catch (IOException | FileReadingException ex) {
                     }
@@ -174,7 +162,7 @@ public class WestPane extends JPanel {
                 } else try {
                     int x = Integer.parseInt(coords[0].getText());
                     int y = Integer.parseInt(coords[1].getText());
-                    board.getCenter().getGraph().addPatient(new Patient(id++, x, y));
+                    center_pane.addPatient(new Patient(id++, x, y));
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(new JFrame(), "Współrzędne muszą być liczbami całkowitymi!");
                 }
@@ -192,13 +180,13 @@ public class WestPane extends JPanel {
             boxes[i].setSelected(true);
         }
         boxes[0].addActionListener((ActionEvent e) -> {
-            board.getCenter().getGraph().toggleHospitals();
+            center_pane.toggle(0);
         });
         boxes[1].addActionListener((ActionEvent e) -> {
-            board.getCenter().getGraph().toggleObjects();
+            center_pane.toggle(1);
         });
         boxes[2].addActionListener((ActionEvent e) -> {
-            board.getCenter().getGraph().toggleRoads();
+            center_pane.toggle(2);
         });
         return boxes;
     }

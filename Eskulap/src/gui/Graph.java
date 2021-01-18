@@ -16,8 +16,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import storage.Construction;
 import storage.Hospital;
@@ -34,13 +32,15 @@ public class Graph extends JPanel {
     private Polygon border;
     private Point label;
     private int hovered_id;
-    private double scaleX;
-    private double scaleY;
     private int minimum_x;
     private int minimum_y;
     private int maximum_x;
     private int maximum_y;
-    private boolean draw_hospitals, draw_objects, draw_roads;
+    private double scaleX;
+    private double scaleY;
+    private boolean draw_hospitals;
+    private boolean draw_objects;
+    private boolean draw_roads;
     private Animator animation;
     private final Map map;
     private final CenterPane center_pane;
@@ -59,6 +59,7 @@ public class Graph extends JPanel {
         map = m;
         init();
         loadMap();
+        repaint();
     }
 
     private void init() {
@@ -94,27 +95,26 @@ public class Graph extends JPanel {
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
     }
 
+    public void print(String s) {
+        center_pane.print(s);
+    }
+
     public void setSpeed(int s) {
         Animator.setPercent(s);
     }
 
-    public void toggleHospitals() {
-        draw_hospitals = !draw_hospitals;
+    public void toggle(int id) {
+        switch (id) {
+            case 0:
+                draw_hospitals = !draw_hospitals;
+                break;
+            case 1:
+                draw_objects = !draw_objects;
+                break;
+            case 2:
+                draw_roads = !draw_roads;
+        }
         repaint();
-    }
-
-    public void toggleObjects() {
-        draw_objects = !draw_objects;
-        repaint();
-    }
-
-    public void toggleRoads() {
-        draw_roads = !draw_roads;
-        repaint();
-    }
-
-    public CenterPane getCenter() {
-        return center_pane;
     }
 
     public void addPatient(Patient p) {
@@ -188,25 +188,22 @@ public class Graph extends JPanel {
         loadRoads();
         animation = new Animator(this, hospitals, map);
         animation.start();
-        repaint();
     }
 
     public void stopAnimation() {
-        if (animation != null && animation.isAlive()) {
-            animation.interrupt();
-        }
+        animation.interrupt();
     }
 
     private int scale_x(int x) {
         return (int) (scaleX * (x - minimum_x)) + SPACE + RADIUS;
     }
 
-    public int unscale_x(int x) {
-        return (int) ((x - RADIUS - SPACE) / scaleX) + minimum_x;
-    }
-
     private int scale_y(int y) {
         return (int) (scaleY * (y - minimum_y)) + SPACE + RADIUS;
+    }
+
+    public int unscale_x(int x) {
+        return (int) ((x - RADIUS - SPACE) / scaleX) + minimum_x;
     }
 
     public int unscale_y(int y) {
@@ -216,36 +213,27 @@ public class Graph extends JPanel {
     private void findScale() {
         Hospital[] hos = map.getHospitals();
         Construction[] con = map.getConstructs();
+        Point[] points = new Point[hos.length + con.length];
+        for (int i = 0; i < hos.length; i++) {
+            points[i] = hos[i].getWsp();
+        }
+        for (int i = 0; i < con.length; i++) {
+            points[i + hos.length] = con[i].getWsp();
+        }
         int maxX = hos[0].getWsp().x;
         int maxY = hos[0].getWsp().y;
         int minX = maxX;
         int minY = maxY;
-        for (Hospital h : hos) {
-            int x = h.getWsp().x;
-            int y = h.getWsp().y;
-            if (maxX < x) {
-                maxX = x;
-            } else if (minX > x) {
-                minX = x;
+        for (Point p : points) {
+            if (maxX < p.x) {
+                maxX = p.x;
+            } else if (minX > p.x) {
+                minX = p.x;
             }
-            if (maxY < y) {
-                maxY = y;
-            } else if (minY > y) {
-                minY = y;
-            }
-        }
-        for (Construction c : con) {
-            int x = c.getWsp().x;
-            int y = c.getWsp().y;
-            if (maxX < x) {
-                maxX = x;
-            } else if (minX > x) {
-                minX = x;
-            }
-            if (maxY < y) {
-                maxY = y;
-            } else if (minY > y) {
-                minY = y;
+            if (maxY < p.y) {
+                maxY = p.y;
+            } else if (minY > p.y) {
+                minY = p.y;
             }
         }
         scaleX = (X_SIZE - 2 * SPACE) / (maxX - minX);
@@ -308,7 +296,15 @@ public class Graph extends JPanel {
 
     private void drawInfo(Graphics2D g) {
         g.setColor(Color.WHITE);
-        g.fillRect((int) label.getX(), (int) label.getY() - 30, 250, 30);
+        int x = label.x;
+        int y = label.y;
+        if (X_SIZE - x < 220) {
+            x -= 220;
+        }
+        if (y > 30) {
+            y -= 30;
+        }
+        g.fillRect(x, y, 220, 30);
         Hospital hos = map.getHospitals()[hovered_id];
         g.setColor(Color.BLACK);
         int free = hos.getFreeBedCount();
@@ -317,11 +313,11 @@ public class Graph extends JPanel {
             queue = -free;
             free = 0;
         }
-        g.drawString(queue + "/" + free + "/" + hos.getBedNumber(), (int) label.getX(), (int) label.getY() - 18);
-        g.drawString("Kolejka/Wolne łóżka/Wszystkie łóżka", (int) label.getX(), (int) label.getY() - 4);
+        g.drawString(queue + "/" + free + "/" + hos.getBedNumber(), x, y + 13);
+        g.drawString("Kolejka/Wolne łóżka/Wszystkie łóżka", x, y + 27);
     }
 
-    public boolean patientLoaded() {
+    private boolean patientLoaded() {
         return animation.getPatient() != null;
     }
 

@@ -3,16 +3,45 @@ package storage;
 import java.awt.Point;
 import java.util.ArrayList;
 
-public class Line {
+public class Line implements Comparable<Line> {
 
+    private final double ratio;
     private final double a, b;
     private final Point start, end;
 
-    public Line(Point s, Point e) {
+    public Line(Point s, Point e, double distance) {
         start = s;
         end = e;
         a = 1.0 * (end.y - start.y) / (end.x - start.x);
         b = start.y - a * start.x;
+        ratio = distance / length();
+    }
+
+    public Line(Point s, Point e, Line l) {
+        start = s;
+        end = e;
+        a = 1.0 * (end.y - start.y) / (end.x - start.x);
+        b = start.y - a * start.x;
+        ratio = l.ratio;
+    }
+
+    public static ArrayList<Line> makeLines(Hospital[] hos, Road[] ros) {
+        ArrayList<Line> lines = new ArrayList<>();
+        Point[] start = new Point[ros.length];
+        Point[] end = new Point[ros.length];
+        for (Hospital h : hos) {
+            for (int i = 0; i < ros.length; i++) {
+                if (h.getId() == ros[i].getIdFirst()) {
+                    start[i] = h.getWsp();
+                } else if (h.getId() == ros[i].getIdSecond()) {
+                    end[i] = h.getWsp();
+                }
+            }
+        }
+        for (int i = 0; i < ros.length; i++) {
+            lines.add(new Line(start[i], end[i], ros[i].getDistance()));
+        }
+        return lines;
     }
 
     public Point crossLines(Line with) {
@@ -30,70 +59,32 @@ public class Line {
         if (p.equals(start) || p.equals(end)) {
             return false;
         } else {
-            return (p.x >= getLeftX() && p.x <= getRightX() && p.y >= getUpY() && p.y <= getDownY());
+            return (p.x >= getLeftPoint().x && p.x <= getRightPoint().x && p.y >= getUpY() && p.y <= getDownY());
         }
     }
 
-    public double length() {
+    public Road toRoad(Hospital[] hos) {
+        int s_i = -1;
+        int e_i = -1;
+        for (Hospital h : hos) {
+            if (h.getWsp().equals(start)) {
+                s_i = h.getId();
+            } else if (h.getWsp().equals(end)) {
+                e_i = h.getId();
+            }
+        }
+        return new Road(0, s_i, e_i, getDistance());
+    }
+
+    private double length() {
         return Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
     }
 
-    public double distFromStart(Point p) {
-        return Math.sqrt(Math.pow(p.x - start.x, 2) + Math.pow(p.y - start.y, 2));
+    private double getDistance() {
+        return length() * ratio;
     }
 
-    public double distFromEnd(boolean from_start, Point p) {
-        return Math.sqrt(Math.pow(p.x - end.x, 2) + Math.pow(p.y - end.y, 2));
-    }
-
-    public static ArrayList<Line> makeLines(Hospital[] hos, Road[] ros) {
-        ArrayList<Line> lines = new ArrayList<>();
-        Point[] start = new Point[ros.length];
-        Point[] end = new Point[ros.length];
-        for (Hospital h : hos) {
-            for (int i = 0; i < ros.length; i++) {
-                if (h.getId() == ros[i].getIdFirst()) {
-                    start[i] = h.getWsp();
-                } else if (h.getId() == ros[i].getIdSecond()) {
-                    end[i] = h.getWsp();
-                }
-            }
-        }
-        for (int i = 0; i < ros.length; i++) {
-            lines.add(new Line(start[i], end[i]));
-        }
-        return lines;
-    }
-    
-    public boolean startIsLeft() {
-        return start.x <= end.x;
-    }
-
-    public Point getStart() {
-        return start;
-    }
-
-    public Point getEnd() {
-        return end;
-    }
-
-    public int getLeftX() {
-        if (start.x < end.x) {
-            return start.x;
-        } else {
-            return end.x;
-        }
-    }
-
-    public int getRightX() {
-        if (start.x > end.x) {
-            return start.x;
-        } else {
-            return end.x;
-        }
-    }
-
-    public int getUpY() {
+    private int getUpY() {
         if (start.y < end.y) {
             return start.y;
         } else {
@@ -101,14 +92,14 @@ public class Line {
         }
     }
 
-    public int getDownY() {
+    private int getDownY() {
         if (start.y > end.y) {
             return start.y;
         } else {
             return end.y;
         }
     }
-    
+
     public Point getLeftPoint() {
         if (start.x < end.x) {
             return start;
@@ -116,7 +107,7 @@ public class Line {
             return end;
         }
     }
-    
+
     public Point getRightPoint() {
         if (start.x > end.x) {
             return start;
@@ -129,5 +120,10 @@ public class Line {
     public String toString() {
         return start.x + " " + start.y + " -> " + end.x + " " + end.y;
     }
-    
+
+    @Override
+    public int compareTo(Line o) {
+        return getLeftPoint().x - o.getLeftPoint().x;
+    }
+
 }

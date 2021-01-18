@@ -1,6 +1,6 @@
 package storage;
 
-public class Road {
+public class Road implements Comparable<Road> {
 
     private final int id;
     private final int idHospitalFirst;
@@ -23,7 +23,7 @@ public class Road {
     public boolean equals(Object o) {
         if (o instanceof Road) {
             Road r = (Road) o;
-            return this.id == r.id && this.idHospitalFirst == r.idHospitalFirst 
+            return this.id == r.id && this.idHospitalFirst == r.idHospitalFirst
                     && this.idHospitalSecond == r.idHospitalSecond && this.distance == r.distance;
         } else {
             return false;
@@ -54,5 +54,14 @@ public class Road {
 
     public double getDistance() {
         return distance;
+    }
+
+    @Override
+    public int compareTo(Road o) {
+        if (getIdFirst() == o.getIdFirst()) {
+            return getIdSecond() - o.getIdSecond();
+        } else {
+            return getIdFirst() - o.getIdFirst();
+        }
     }
 }

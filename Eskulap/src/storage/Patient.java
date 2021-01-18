@@ -8,14 +8,9 @@ public class Patient {
     private final int id;
     private final Point wsp;
 
-	public Patient(int id, int wspx, int wspy) {
-		this.id = id;
-		wsp = new Point(wspx, wspy);
-	}
-        
-    @Override
-    public Patient clone() {
-        return new Patient(id, wsp.x, wsp.y);
+    public Patient(int id, int wspx, int wspy) {
+        this.id = id;
+        wsp = new Point(wspx, wspy);
     }
 
     public void move(int x, int y) {

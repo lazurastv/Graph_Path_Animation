@@ -3,7 +3,7 @@ package eskulap;
 import java.awt.Point;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.Assert.*;
 
 public class JarvisMarchTest {
 

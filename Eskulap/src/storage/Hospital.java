@@ -63,6 +63,10 @@ public class Hospital {
         return freeBedCount;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public int addPatient(boolean visited[]) {
         if (freeBedCount > 0) {
             freeBedCount--;

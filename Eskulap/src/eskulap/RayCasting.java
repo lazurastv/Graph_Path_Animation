@@ -30,11 +30,7 @@ public class RayCasting {
             }
             if (onVertexHeight && count == 2) {
                 int c = vertexHeightIntersections(new Point(-1_000_000, p.y));
-                if (c == 2) {
-                    return false;
-                } else {
-                    return true;
-                }
+                return c != 2;
             }
             i = next;
         }

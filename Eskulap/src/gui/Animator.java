@@ -4,7 +4,6 @@ import floyd_warshall.FloydWarshallAlgorithm;
 import java.awt.Point;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import storage.Map;
 import storage.Patient;
 
@@ -16,7 +15,7 @@ public class Animator extends Thread {
     private Point start;
     private Patient patient;
     private int[] path;
-    private int i = 0;
+    private int i;
     private final Graph graph;
     private final Rectangle2D[] hospitals;
     private final Map map;
@@ -59,7 +58,7 @@ public class Animator extends Thread {
     }
 
     private void setup() {
-        graph.getCenter().print("Pacjent " + patient.getId());
+        graph.print("Pacjent " + patient.getId());
         print();
         start = (Point) patient.getWsp().clone();
         p_x = patient.getWsp().x;
@@ -70,9 +69,9 @@ public class Animator extends Thread {
 
     private void print() {
         if (map.getHospitals()[path[i]].getBedNumber() != 0) {
-            graph.getCenter().print(" -> Szpital " + map.getHospitals()[path[i]].getId());
+            graph.print(" -> " + map.getHospitals()[path[i]].getName() + " (id " + map.getHospitals()[path[i]].getId() + ")");
         } else {
-            graph.getCenter().print(" -> Skrzyżowanie\n");
+            graph.print(" -> Skrzyżowanie\n");
         }
     }
 
@@ -139,7 +138,7 @@ public class Animator extends Thread {
         patient = null;
         patients.remove(0);
     }
-    
+
     public Patient getPatient() {
         return patient;
     }
@@ -148,40 +147,37 @@ public class Animator extends Thread {
     public void run() {
         while (!isInterrupted()) {
             nextPatient();
-            while (patient != null) {
-                if (percent > 0) {
-                    graph.repaint();
-                    long time = System.currentTimeMillis();
-                    p_x += dx;
-                    p_y += dy;
-                    patient.move((int) p_x, (int) p_y);
-                    if (crossedX() || crossedY()) {
-                        patient.move(end.x, end.y);
-                        p_x = patient.getWsp().x;
-                        p_y = patient.getWsp().y;
-                        graph.repaint();
-                        if (i + 1 == path.length) {
-                            int ret = map.getHospitals()[path[i]].addPatient(fwa.getVisited());
-                            switch (ret) {
-                                case 0:
-                                    graph.getCenter().print(" -> Jest miejsce.\n");
-                                    removePatient();
-                                    break;
-                                case -1:
-                                    graph.getCenter().print(" -> Brak miejsc.\n");
-                                    makePath(path[i]);
-                                    break;
-                                case -2:
-                                    graph.getCenter().print(" -> Dodano do kolejki.\n");
-                                    removePatient();
-                            }
-                        } else {
-                            i++;
-                            setup();
+            if (patient != null && percent > 0) {
+                long time = System.currentTimeMillis();
+                p_x += dx;
+                p_y += dy;
+                patient.move((int) p_x, (int) p_y);
+                if (crossedX() || crossedY()) {
+                    patient.move(end.x, end.y);
+                    p_x = patient.getWsp().x;
+                    p_y = patient.getWsp().y;
+                    if (i + 1 == path.length) {
+                        int ret = map.getHospitals()[path[i]].addPatient(fwa.getVisited());
+                        switch (ret) {
+                            case 0:
+                                graph.print(" -> Jest miejsce.\n");
+                                removePatient();
+                                break;
+                            case -1:
+                                graph.print(" -> Brak miejsc.\n");
+                                makePath(path[i]);
+                                break;
+                            case -2:
+                                graph.print(" -> Dodano do kolejki.\n");
+                                removePatient();
                         }
+                    } else {
+                        i++;
+                        setup();
                     }
-                    delay(time);
                 }
+                delay(time);
+                graph.repaint();
             }
         }
     }

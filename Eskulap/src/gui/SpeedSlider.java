@@ -28,7 +28,7 @@ public class SpeedSlider extends JSlider implements ChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        west_pane.getBoard().getCenter().getGraph().setSpeed(getValue());
+        west_pane.setSpeed(getValue());
     }
 
 }

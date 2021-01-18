@@ -8,7 +8,7 @@ import storage.Hospital;
 import storage.Patient;
 import storage.Road;
 import storage.Construction;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 public class FileManagerTest {
 

@@ -12,15 +12,14 @@ import javax.swing.JTextArea;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 import static javax.swing.SwingConstants.CENTER;
 import storage.Map;
+import storage.Patient;
 
 public class CenterPane extends JPanel {
     
     private Graph graph;
-    private final Board board;
     private final JTextArea console;
     
-    public CenterPane(Board b) {
-        board = b;
+    public CenterPane() {
         console = makeConsole();
         init();
     }
@@ -65,14 +64,6 @@ public class CenterPane extends JPanel {
         console.setText(console.getText() + s);
     }
     
-    public Board getBoard() {
-        return board;
-    }
-    
-    public Graph getGraph() {
-        return graph;
-    }
-    
     public void loadMap(Map m) {
         remove(1);
         if (graph != null) {
@@ -85,8 +76,20 @@ public class CenterPane extends JPanel {
         setVisible(true);
     }
     
+    public void setSpeed(int s) {
+        graph.setSpeed(s);
+    }
+    
+    public void addPatient(Patient p) {
+        graph.addPatient(p);
+    }
+    
+    public void toggle(int id) {
+        graph.toggle(id);
+    }
+    
     public boolean mapLoaded() {
-        return board.mapLoaded();
+        return graph != null;
     }
     
 }
